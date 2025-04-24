@@ -7,6 +7,9 @@
  * @description This library provides basic functions for TriOSignO.
  */
 
+export * from "./sign_recognizer/sign_recognizer";
+export * from "./sign_recognizer/draw_landmark";
+
 export function greet(name: string): string {
   return `Hello, ${name}!`;
 }
