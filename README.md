@@ -1,4 +1,4 @@
-# TriOSignOLIB
+# triosignolib
 
 Description de la bibliothèque.
 
@@ -15,7 +15,7 @@ Then use it doing:
 ```ts
 import { WhateverYouWantToImportFromTheLib } from "triosignolib"
 ```
-Check the library documentation [here](https://www.youtube.com/watch?v=dQw4w9WgXcQ)
+Check the library documentation [here](https://github.com/EIP-TEK89/trio-signo-fullstack/wiki/TrioSignoLib)
 
 ## Vite troubleshooting
 If you have a vite error telling you it cannot import the path of the lib,
