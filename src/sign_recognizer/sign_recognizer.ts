@@ -22,13 +22,19 @@ export interface ModelConfig {
   ff_dim: number;
 }
 
-// This where all tracking will be stored in the future
+/**
+ * @description Interface that stores landmark data output of each model.
+ */
 export interface LandmarkData {
   hand: HandLandmarkerResult | null;
   // body: BodyLandmarkerResult | null;
   // face: FaceLandmarkerResult | null;
 }
 
+/**
+ * @description Interface that stores the result of the sign recognizer model,
+ * and all the landmarks.
+ */
 export interface ModelsPredictions {
   signId: number;
   signLabel: string; // Where you can get the name of the recognized sign
@@ -64,6 +70,11 @@ function ModelConfigFromJson(json: any): ModelConfig {
 
 const HANDLANDMARKER_MODEL_PATH: string = `https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task`
 
+/**
+ * SignRecognizer class
+ * This class is used to recognize signs using a ONNX model and a Hand Landmarker model.
+ * It uses the ONNX Runtime Web for running the model and the MediaPipe Hand Landmarker for hand detection.
+ */
 export class SignRecognizer {
   public sign_recongnizer_config: ModelConfig | null = null;
   private session: ort.InferenceSession | null = null;
@@ -78,7 +89,16 @@ export class SignRecognizer {
   // Handlandmarker variables
   private handLandmarker: HandLandmarker | null = null;
 
-
+  /**
+   *
+   * @description Initialize the class and loads the models provided as argument.
+   * Most of the time only onnxModelPath variable needs to be set.
+   *
+   * @argument onnxModelPath: The Sign Recognizer model to load (usually indicated by the lesson you fetched)
+   * @argument handLandmarkerPath: Defines where to load the handlandmarker model.
+   * @argument faceLandmarkerPath: Defines where to load the facelandmarker model.
+   * @argument bodyLandmarkerPath: Defines where to load the bodylandmarker model.
+   */
   constructor(onnxModelPath: string, handLandmarkerPath: string = HANDLANDMARKER_MODEL_PATH) {
     this.loadOnnxModel(onnxModelPath)
     this.loadHandLandmarker(handLandmarkerPath)
@@ -92,7 +112,12 @@ export class SignRecognizer {
     };
   }
 
-  /** Charger le modèle ONNX */
+  /**
+   *
+   * @description Load the ONNX model from a URL and parse the JSON metadata.
+   *
+   * @argument onnxModelPath: The URL of the ONNX model to load.
+   */
   async loadOnnxModel(path: string): Promise<void> {
     console.log("Loading ONNX model...");
 
@@ -136,6 +161,11 @@ export class SignRecognizer {
     console.log("ONNX model loaded !");
   }
 
+  /**
+   * @description Load a the handlandmarker model at the procided path
+   *
+   * @argument path: Path of the handlandmarker model.
+   */
   async loadHandLandmarker(path: string): Promise<void> {
     console.log("Loading Hand Landmarker model...");
     const vision = await FilesetResolver.forVisionTasks(
@@ -152,6 +182,15 @@ export class SignRecognizer {
     console.log("Hand Landmarker model loaded !");
   }
 
+  /**
+   * @description Run a prediction and return its result asynchronously.
+   * Unless your need is specific prefer using predict() that do the same thing but optimized.
+   *
+   * @param elem Video element where the sign to recognize is
+   * @param lazy Optimize the prediction by skipping similar frames, 
+   * I recommend to set it true unless you are encountering bug or debugging.
+   * @returns A ModelsPrediction object containing the latest model prediction.
+   */
   async predictAsync(elem: HTMLVideoElement, lazy: boolean = true): Promise<ModelsPredictions> {
 
     if (this.isPredicting || elem.videoHeight === 0 || elem.videoWidth === 0) {
@@ -202,10 +241,13 @@ export class SignRecognizer {
   }
 
   /**
+   * @description This call only run a prediction if there's no prediction in progress,
+   * otherwise it will return the last completed prediction.
+   * If you want to manually run a prediction use predictAsync method instead.
    *
    * @param elem Video element where the sign to recognize is
    * @param lazy Optimize the prediction by skipping similar frames, I recommend to set it false only if you want to debug
-   * @returns
+   * @returns A ModelsPrediction object containing the latest model prediction.
    */
   predict(elem: HTMLVideoElement, lazy: boolean = true): ModelsPredictions {
     if (!this.isPredicting) {
@@ -214,7 +256,12 @@ export class SignRecognizer {
     return this.lastPrediction;
   }
 
-  async detectHands(elem: HTMLVideoElement): Promise<HandLandmarkerResult | null> {
+  /**
+   * @description Detect hands in the video element and return the result.
+   * @param elem Video element where the sign to recognize is
+   * @returns A HandLandmarkerResult object containing the hand landmarks.
+   */
+   sync detectHands(elem: HTMLVideoElement): Promise<HandLandmarkerResult | null> {
     if (!this.handLandmarker) {
       console.warn("Hand Landmarker model is not loaded yet!");
       return null;
@@ -224,6 +271,11 @@ export class SignRecognizer {
     return this.handLandmarker.detectForVideo(elem, startTimeMs);
   }
 
+    /**
+     * @description Detect hands in the video element and return the result. 
+     * @param elem Video element where the sign to recognize is
+     * @returns A HandLandmarkerResult object containing the hand landmarks.
+    */
   async recognizeSign(datasample: DataSample): Promise<number> {
     if (!this.session) {
       console.error("ONNX model is not loaded yet!");

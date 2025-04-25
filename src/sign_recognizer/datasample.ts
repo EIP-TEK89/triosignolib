@@ -19,17 +19,6 @@ export class DataSample {
     this.computeHandVelocity();
   }
 
-  // static fromDict(jsonData: any): DataSample {
-  //   const gestures = jsonData.gestures.map((gesture: any) => new DataGestures(gesture));
-  //   return new DataSample(jsonData.label, gestures, jsonData.framerate, jsonData.mirrorable);
-  // }
-
-  // static fromJsonFile(filePath: string): Promise<DataSample> {
-  //   return fetch(filePath)
-  //     .then(response => response.json())
-  //     .then(data => DataSample.fromDict(data));
-  // }
-
   static unflat(label: string, rawData: number[], validFields?: string[]): DataSample {
     const gestures: DataGestures[] = [];
     const lenValidFields = (validFields ? validFields.length : FIELDS.length) * FIELD_DIMENSION;
@@ -41,27 +30,6 @@ export class DataSample {
     return new DataSample(label, gestures);
   }
 
-  // toDict(): any {
-  //   return {
-  //     label: this.label,
-  //     gestures: this.gestures.map(gesture => gesture.toDict()),
-  //     framerate: this.framerate,
-  //     mirrorable: this.mirrorable
-  //   };
-  // }
-
-  // async toJsonFile(filePath: string, indent: boolean = false): Promise<void> {
-  //   const data = JSON.stringify(this.toDict(), null, indent ? 2 : 0);
-  //   const blob = new Blob([data], { type: "application/json" });
-  //   const url = URL.createObjectURL(blob);
-  //   const a = document.createElement("a");
-  //   a.href = url;
-  //   a.download = filePath;
-  //   document.body.appendChild(a);
-  //   a.click();
-  //   document.body.removeChild(a);
-  // }
-
   flat(validFields?: string[]): number[] {
     return this.gestures.flatMap(gesture => gesture.get1DArray(validFields));
   }
@@ -70,10 +38,6 @@ export class DataSample {
     this.gestures.splice(position, 0, DataGestures.buildFromHandLandmarkerResult(handLandmarks));
     this.computeHandVelocity();
     return this;
-  }
-
-  samplesTo1DArray(validFields?: string[]): number[] {
-    return this.gestures.flatMap(gesture => gesture.get1DArray(validFields));
   }
 
   setNonePointsRandomlyToRandomOrZero(proba: number = 0.1): DataSample {
@@ -184,17 +148,24 @@ export class DataSample {
     return this;
   }
 
+  /**
+   * Move all the gestures as if it only on the right or the left side.
+   * As if it was only a half of the body.
+   * This is useful to reduce model complexity when the signs are not direction sensitive.
+   * @param rightSide If true, move to the right side, else to the left side.
+   * @returns The current DataSample instance for method chaining.
+   */
   moveToOneSide(rightSide: boolean = true): DataSample {
     this.gestures.forEach(gesture => gesture.moveToOneSide(rightSide));
     return this;
   }
 
   /**
- * Converts the sample gestures into an `ort.Tensor` for ONNX inference.
- * @param sequenceLength Number of frames to include in the tensor.
- * @param validFields List of valid fields to extract from gestures.
- * @returns `ort.Tensor` (ONNX Runtime)
- */
+   * Converts the sample gestures into an `ort.Tensor` for ONNX inference.
+   * @param sequenceLength Number of frames to include in the tensor.
+   * @param validFields List of valid fields to extract from gestures.
+   * @returns `ort.Tensor` (ONNX Runtime)
+   */
   toTensor(sequenceLength: number, validFields: string[] = FIELDS): ort.Tensor {
     const fieldCount = validFields.length * FIELD_DIMENSION;
 

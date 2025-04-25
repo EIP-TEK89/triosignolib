@@ -1,3 +1,6 @@
+/**
+  * Gestures class that refer all possible points.
+  */
 class Gestures<T> {
   // Left hand data
   l_hand_position: T | null = null;
@@ -67,7 +70,13 @@ class Gestures<T> {
   }
 }
 
+/**
+ * Array with the names every fields of Gestures class.
+ */
 const FIELDS: string[] = Object.keys(new Gestures());
+/**
+ * Number of dimensions of each field in the Gestures class.
+ */
 const FIELD_DIMENSION: number = 3
 
 export { Gestures, FIELDS, FIELD_DIMENSION };
