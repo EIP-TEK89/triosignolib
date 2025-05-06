@@ -261,7 +261,7 @@ export class SignRecognizer {
    * @param elem Video element where the sign to recognize is
    * @returns A HandLandmarkerResult object containing the hand landmarks.
    */
-   sync detectHands(elem: HTMLVideoElement): Promise<HandLandmarkerResult | null> {
+   async detectHands(elem: HTMLVideoElement): Promise<HandLandmarkerResult | null> {
     if (!this.handLandmarker) {
       console.warn("Hand Landmarker model is not loaded yet!");
       return null;
