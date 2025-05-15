@@ -19,5 +19,10 @@
     "preversion": "npm run lint",
     "version": "npm run format && git add -A src",
     "postversion": "git push && git push --tags"
+  },
+  "dependencies": {
+    "onnxruntime-react-native": "^1.22.0",
+    "react-native-fs": "^2.20.0",
+    "triosigno-lib": "file:../core"
   }
 }
