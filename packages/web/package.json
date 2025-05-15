@@ -1,5 +1,5 @@
 {
-  "name": "web",
+  "name": "@triosigno/web",
   "version": "0.1.0",
   "description": "TypeScript library for TrioSigno",
   "main": "./dist/index.js",
@@ -19,5 +19,8 @@
     "preversion": "npm run lint",
     "version": "npm run format && git add -A src",
     "postversion": "git push && git push --tags"
+  },
+  "dependencies": {
+    "onnxruntime-web": "^1.21.1"
   }
 }

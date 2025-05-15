@@ -1,5 +1,4 @@
 import { HandLandmarkerResult } from '@mediapipe/tasks-vision';
-import * as ort from "onnxruntime-web";
 
 import { FIELDS, FIELD_DIMENSION } from "./gestures/gestures";
 import { DataGestures } from "./gestures/data_gestures";
@@ -158,30 +157,5 @@ export class DataSample {
   moveToOneSide(rightSide: boolean = true): DataSample {
     this.gestures.forEach(gesture => gesture.moveToOneSide(rightSide));
     return this;
-  }
-
-  /**
-   * Converts the sample gestures into an `ort.Tensor` for ONNX inference.
-   * @param sequenceLength Number of frames to include in the tensor.
-   * @param validFields List of valid fields to extract from gestures.
-   * @returns `ort.Tensor` (ONNX Runtime)
-   */
-  toTensor(sequenceLength: number, validFields: string[] = FIELDS): ort.Tensor {
-    const fieldCount = validFields.length * FIELD_DIMENSION;
-
-    // Initialize a Float32Array for ONNX Tensor storage
-    const data = new Float32Array(sequenceLength * fieldCount);
-
-    for (let i = 0; i < Math.min(sequenceLength, this.gestures.length); i++) {
-      const frameData = this.gestures[i].get1DArray(validFields);
-
-      // Insert frame data into the main tensor array
-      data.set(frameData, i * fieldCount);
-    }
-
-    // ONNX Tensors require an explicit shape definition
-    const tensorShape = [sequenceLength, fieldCount];
-
-    return new ort.Tensor("float32", data, tensorShape);
   }
 }

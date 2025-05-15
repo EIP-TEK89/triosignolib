@@ -1,14 +1,21 @@
 # triosignolib
 
-Description de la bibliothèque.
-
 ## Installation
 
 Clone this repo the root of your code space.
 
 Then:
 ```bash
-npm install ./triosignolib
+npm install ./triosignolib-core
+```
+Then depending you platform:
+> For web browser
+```bash
+npm install ./triosignolib-web
+```
+> For mobile (Android/IOS)
+```bash
+npm install ./triosignolob-mobile
 ```
 
 Then use it doing:

@@ -1,6 +1,10 @@
 {
     "private": true,
-    "workspaces": ["packages/*"],
+    "workspaces": [
+        "packages/core",
+        "packages/mobile",
+        "packages/web"
+    ],
     "scripts": {
         "build": "tsc -p tsconfig.json"
     }
