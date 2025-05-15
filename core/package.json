@@ -1,5 +1,5 @@
 {
-  "name": "@triosigno/core",
+  "name": "triosigno-lib",
   "version": "0.1.0",
   "description": "TypeScript library for TrioSigno",
   "main": "./dist/index.js",

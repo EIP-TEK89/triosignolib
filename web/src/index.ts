@@ -1,7 +1,5 @@
 import * as ort from "onnxruntime-web";
-import { OnnxRunner, ModelConfig } from "../../core/src/onnx_interface";
-import { DataSample } from "../../core/src/sign_recognizer/datasample";
-import { FIELDS, FIELD_DIMENSION } from "../../core/src/sign_recognizer/gestures/gestures";
+import { OnnxRunner, ModelConfig, DataSample, FIELDS, FIELD_DIMENSION } from "triosigno-lib";
 
 function softmax(arr: Float32Array): Float32Array {
   const max = Math.max(...arr);
