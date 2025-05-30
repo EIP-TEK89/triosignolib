@@ -14,6 +14,7 @@ export * from "./sign_recognizer/utils/rot_3D";
 export * from "./sign_recognizer/datasample"
 export * from "./sign_recognizer/gestures/gestures";
 export * from "./onnx_interface";
+export * from "./mediapipe_interface"
 
 export function coreGreet(name: string): string {
   return `Hello, ${name} from core!`;
