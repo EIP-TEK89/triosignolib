@@ -1,21 +1,12 @@
-import { HandLandmarker, FilesetResolver, HandLandmarkerResult } from "@mediapipe/tasks-vision";
-
 import { OnnxRunner, ModelConfig, ModelConfigFromJson } from "../onnx_interface";
+import { MediapipeRunner } from "../mediapipe_interface"
 import { DataSample } from "./datasample";
+import { DataGestures } from "./gestures/data_gestures"
 
 import axios, { AxiosResponse } from "axios";
 import JSZip from "jszip";
 import { Clock } from "./utils/clock";
 
-
-/**
- * @description Interface that stores landmark data output of each model.
- */
-export interface LandmarkData {
-  hand: HandLandmarkerResult | null;
-  // body: BodyLandmarkerResult | null;
-  // face: FaceLandmarkerResult | null;
-}
 
 /**
  * @description Interface that stores the result of the sign recognizer model,
@@ -24,7 +15,7 @@ export interface LandmarkData {
 export interface ModelsPredictions {
   signId: number;
   signLabel: string; // Where you can get the name of the recognized sign
-  landmarks: LandmarkData;
+  landmarks: DataGestures | null;
 }
 
 function computeFrameDifference(prevFrame: ImageData, currentFrame: ImageData): number {
@@ -39,15 +30,14 @@ function computeFrameDifference(prevFrame: ImageData, currentFrame: ImageData): 
 }
 
 
-const HANDLANDMARKER_MODEL_PATH: string = `https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task`
-
 /**
  * SignRecognizer class
  * This class is used to recognize signs using a ONNX model and a Hand Landmarker model.
  * It uses the ONNX Runtime Web for running the model and the MediaPipe Hand Landmarker for hand detection.
  */
-export class SignRecognizer {
+export class SignRecognizer<T> {
   private session: OnnxRunner;
+  private mediapipe_session: MediapipeRunner<T>;
 
   private isPredicting: boolean = false;
   private lastPrediction: ModelsPredictions;
@@ -56,8 +46,7 @@ export class SignRecognizer {
   private canvas: HTMLCanvasElement = document.createElement("canvas");
   private clock: Clock = new Clock(30);
 
-  // Handlandmarker variables
-  private handLandmarker: HandLandmarker | null = null;
+  
 
   /**
    *
@@ -70,83 +59,20 @@ export class SignRecognizer {
    * @argument faceLandmarkerPath: Defines where to load the facelandmarker model.
    * @argument bodyLandmarkerPath: Defines where to load the bodylandmarker model.
    */
-  constructor(onnxRunner: OnnxRunner, onnxModelPath: string, handLandmarkerPath: string = HANDLANDMARKER_MODEL_PATH) {
-    this.loadOnnxModel(onnxModelPath)
-    this.loadHandLandmarker(handLandmarkerPath)
+  constructor(onnxRunner: OnnxRunner, mediapipeRunner: MediapipeRunner<T>) {
     this.session = onnxRunner;
+    this.mediapipe_session = mediapipeRunner;
+
+    this.session.fetchModel()
+    this.mediapipe_session.loadHandTrackModel()
+    // this.mediapipe_session.loadBodyTrackModel()
+    // this.mediapipe_session.loadFaceTrackModel()
 
     this.lastPrediction = {
       signId: -1,
       signLabel: "Null",
-      landmarks: {
-        hand: null
-      }
+      landmarks: null 
     };
-  }
-
-  /**
-   *
-   * @description Load the ONNX model from a URL and parse the JSON metadata.
-   *
-   * @argument onnxModelPath: The URL of the ONNX model to load.
-   */
-  async loadOnnxModel(path: string): Promise<void> {
-    console.log("Loading ONNX model...");
-
-    const response: AxiosResponse = await axios.get(path, { responseType: "arraybuffer" });
-
-    const zip = await JSZip.loadAsync(response.data);
-    let onnxFileBlob: Blob | null = null;
-    let jsonFileText: string | null = null;
-
-    // Iterate over files in the ZIP
-    for (const filename of Object.keys(zip.files)) {
-      if (filename.endsWith(".onnx")) {
-        const onnxFile: JSZip.JSZipObject | null = zip.file(filename)
-        if (onnxFile)
-          onnxFileBlob = await onnxFile.async("blob");
-      }
-      if (filename.endsWith(".json")) {
-        const jsonFile: JSZip.JSZipObject | null = zip.file(filename)
-        if (jsonFile)
-          jsonFileText = await jsonFile.async("text");
-      }
-    }
-
-    // Handle missing files
-    if (!onnxFileBlob) throw new Error("No .onnx file found in ZIP.");
-    if (!jsonFileText) throw new Error("No .json file found in ZIP.");
-
-    // Convert ONNX blob to URL for ONNX Runtime Web
-    const modelUrl = URL.createObjectURL(onnxFileBlob);
-
-    // console.log("ONNX Model URL:", modelUrl);
-    // console.log("JSON Config:", this.sign_recongnizer_config);
-    // console.log("Active Fields:", this.sign_recongnizer_config.active_gestures.getActiveFields());
-
-    await this.session.load(modelUrl, ModelConfigFromJson(JSON.parse(jsonFileText)))
-    console.log("ONNX model loaded !");
-  }
-
-  /**
-   * @description Load a the handlandmarker model at the procided path
-   *
-   * @argument path: Path of the handlandmarker model.
-   */
-  async loadHandLandmarker(path: string): Promise<void> {
-    console.log("Loading Hand Landmarker model...");
-    const vision = await FilesetResolver.forVisionTasks(
-      "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.0/wasm"
-    );
-    this.handLandmarker = await HandLandmarker.createFromOptions(vision, {
-      baseOptions: {
-        modelAssetPath: path,
-        delegate: "GPU"
-      },
-      runningMode: "VIDEO",
-      numHands: 2
-    });
-    console.log("Hand Landmarker model loaded !");
   }
 
   /**
@@ -230,13 +156,7 @@ export class SignRecognizer {
    * @returns A HandLandmarkerResult object containing the hand landmarks.
    */
    async detectHands(elem: HTMLVideoElement): Promise<HandLandmarkerResult | null> {
-    if (!this.handLandmarker) {
-      console.warn("Hand Landmarker model is not loaded yet!");
-      return null;
-    }
 
-    let startTimeMs = performance.now();
-    return this.handLandmarker.detectForVideo(elem, startTimeMs);
   }
 
     /**
