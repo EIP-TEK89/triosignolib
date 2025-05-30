@@ -22,7 +22,10 @@
   },
   "dependencies": {
     "onnxruntime-react-native": "^1.22.0",
+    "react-native-fast-tflite": "^1.6.1",
     "react-native-fs": "^2.20.0",
-    "triosigno-lib": "file:../core"
+    "react-native-vision-camera": "^4.6.4",
+    "triosigno-lib": "file:../core",
+    "vision-camera-resize-plugin": "^3.2.0"
   }
 }

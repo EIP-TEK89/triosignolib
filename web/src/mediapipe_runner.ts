@@ -8,7 +8,7 @@ const HANDLANDMARKER_MODEL_PATH: string = `https://storage.googleapis.com/mediap
 
 export class MediapipeRunnerWeb extends MediapipeRunner<HTMLVideoElement> {
     // Handlandmarker variables
-    private handLandmarker: HandLandmarker | null = null; 
+    private handLandmarker: HandLandmarker | null = null;
 
     async loadHandTrackModel() {
         console.log("Loading Hand Landmarker model...");
@@ -26,30 +26,37 @@ export class MediapipeRunnerWeb extends MediapipeRunner<HTMLVideoElement> {
         console.log("Hand Landmarker model loaded !");
     }
 
-    async runHandTrackModel(video: HTMLVideoElement): DataGestures {
+    async runHandTrackModel(video: HTMLVideoElement): Promise<DataGestures> {
+        const gesture: DataGestures = new DataGestures();
+
+        if (video.videoHeight === 0 || video.videoWidth === 0) {
+            console.warn("HTMLVideoElement has no dimensions yet, returning empty gesture.");
+            return gesture
+        }
+
         if (!this.handLandmarker) {
             console.warn("Hand Landmarker model is not loaded yet!");
-            return null;
+            return gesture;
         }
 
         let startTimeMs = performance.now();
         const result: HandLandmarkerResult = this.handLandmarker.detectForVideo(video, startTimeMs);
-        return DataGestures.buildFromHandLandmarkerResult(result);
+        return gesture.setHandsFromHandLandmarkerResult(result);
     }
-    // async loadBodyTrackModel(): boolean {
-    //     throw("Not implemented")
-    // }
-    // async runBodyTrackModel(): DataGestures {
-    //     throw("Not implemented")
-    // }
-    // async loadFaceTrackModel(): boolean {
-    //     throw("Not implemented")
-    // }
-    // async runFaceTrackModel(): DataGestures {
-    //     throw("Not implemented")
-    // }
-    async runAll(video: HTMLVideoElement): DataGestures {
-        let handGesture: DataGestures = this.runHandTrackModel(video);
+    async loadBodyTrackModel() {
+        throw new Error("Not implemented")
+    }
+    async runBodyTrackModel(video: HTMLVideoElement): Promise<DataGestures> {
+        throw new Error("Not implemented")
+    }
+    async loadFaceTrackModel() {
+        throw new Error("Not implemented")
+    }
+    async runFaceTrackModel(video: HTMLVideoElement): Promise<DataGestures> {
+        throw new Error("Not implemented")
+    }
+    async runAll(video: HTMLVideoElement): Promise<DataGestures> {
+        let handGesture: DataGestures = await this.runHandTrackModel(video);
         return handGesture;
     }
 }

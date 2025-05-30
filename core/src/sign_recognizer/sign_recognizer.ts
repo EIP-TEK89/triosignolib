@@ -2,6 +2,7 @@ import { OnnxRunner, ModelConfig, ModelConfigFromJson } from "../onnx_interface"
 import { MediapipeRunner } from "../mediapipe_interface"
 import { DataSample } from "./datasample";
 import { DataGestures } from "./gestures/data_gestures"
+import { HandLandmarker, FilesetResolver, HandLandmarkerResult } from "@mediapipe/tasks-vision";
 
 import axios, { AxiosResponse } from "axios";
 import JSZip from "jszip";
@@ -46,7 +47,7 @@ export class SignRecognizer<T> {
   private canvas: HTMLCanvasElement = document.createElement("canvas");
   private clock: Clock = new Clock(30);
 
-  
+
 
   /**
    *
@@ -63,7 +64,7 @@ export class SignRecognizer<T> {
     this.session = onnxRunner;
     this.mediapipe_session = mediapipeRunner;
 
-    this.session.fetchModel()
+    this.session.load()
     this.mediapipe_session.loadHandTrackModel()
     // this.mediapipe_session.loadBodyTrackModel()
     // this.mediapipe_session.loadFaceTrackModel()
@@ -71,7 +72,7 @@ export class SignRecognizer<T> {
     this.lastPrediction = {
       signId: -1,
       signLabel: "Null",
-      landmarks: null 
+      landmarks: null
     };
   }
 
@@ -84,36 +85,38 @@ export class SignRecognizer<T> {
    * I recommend to set it true unless you are encountering bug or debugging.
    * @returns A ModelsPrediction object containing the latest model prediction.
    */
-  async predictAsync(elem: HTMLVideoElement, lazy: boolean = true): Promise<ModelsPredictions> {
+  async predictAsync(elem: T, lazy: boolean = true): Promise<ModelsPredictions> {
 
-    if (this.isPredicting || elem.videoHeight === 0 || elem.videoWidth === 0) {
+    if (this.isPredicting) {
       return this.lastPrediction
     }
     this.isPredicting = true;
-    if (lazy && this.canvas) {
-      this.canvas.width = elem.videoWidth;
-      this.canvas.height = elem.videoHeight;
-      const ctx = this.canvas.getContext("2d");
-      if (!ctx || this.canvas.height === 0 || this.canvas.width === 0) {
-        this.isPredicting = false;
-        return this.lastPrediction;
-      }
-      ctx.drawImage(elem, 0, 0, this.canvas.width, this.canvas.height);
-      const currentFrame: ImageData = ctx.getImageData(0, 0, this.canvas.width, this.canvas.height);
+    // if (lazy && this.canvas) {
+    //   this.canvas.width = elem.videoWidth;
+    //   this.canvas.height = elem.videoHeight;
+    //   const ctx = this.canvas.getContext("2d");
+    //   if (!ctx || this.canvas.height === 0 || this.canvas.width === 0) {
+    //     this.isPredicting = false;
+    //     return this.lastPrediction;
+    //   }
+    //   ctx.drawImage(elem, 0, 0, this.canvas.width, this.canvas.height);
+    //   const currentFrame: ImageData = ctx.getImageData(0, 0, this.canvas.width, this.canvas.height);
 
-      if (this.prevFrame && computeFrameDifference(this.prevFrame, currentFrame) === 0) {
-        this.isPredicting = false;
-        return this.lastPrediction;
-      }
-      this.prevFrame = currentFrame;
-    }
-    const handlandmark: HandLandmarkerResult | null = await this.detectHands(elem);
+    //   if (this.prevFrame && computeFrameDifference(this.prevFrame, currentFrame) === 0) {
+    //     this.isPredicting = false;
+    //     return this.lastPrediction;
+    //   }
+    //   this.prevFrame = currentFrame;
+    // }
+    const gesture: DataGestures | null = await this.mediapipe_session.runAll(elem);
+    this.lastPrediction.landmarks = gesture;
+    // console.log(gesture)
 
 
-    this.lastPrediction.landmarks.hand = handlandmark;
+    // this.lastPrediction.landmarks.hand = handlandmark;
     if (this.clock.isTimeToRun()) {
-      if (handlandmark) {
-        this.datasample.insertGestureFromLandmarks(0, handlandmark);
+      if (gesture) {
+        this.datasample.gestures.unshift(gesture)
         const config: ModelConfig | null = this.session.config();
         if (config === null) {
           console.error("Sign recognizer config is not loaded yet!");
@@ -143,20 +146,11 @@ export class SignRecognizer<T> {
    * @param lazy Optimize the prediction by skipping similar frames, I recommend to set it false only if you want to debug
    * @returns A ModelsPrediction object containing the latest model prediction.
    */
-  predict(elem: HTMLVideoElement, lazy: boolean = true): ModelsPredictions {
+  predict(elem: T, lazy: boolean = true): ModelsPredictions {
     if (!this.isPredicting) {
       this.predictAsync(elem, lazy);
     }
     return this.lastPrediction;
-  }
-
-  /**
-   * @description Detect hands in the video element and return the result.
-   * @param elem Video element where the sign to recognize is
-   * @returns A HandLandmarkerResult object containing the hand landmarks.
-   */
-   async detectHands(elem: HTMLVideoElement): Promise<HandLandmarkerResult | null> {
-
   }
 
     /**
@@ -178,4 +172,3 @@ export class SignRecognizer<T> {
     return this.session.run(datasample);
   }
 }
-
