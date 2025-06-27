@@ -50,8 +50,8 @@ export class MediapipeRunnerMobile extends MediapipeRunner<Frame> {
         for (let i = 0; i < 2016; i++) {
           if (palmScores[i] > THRESHOLD) {
             const palmFeature = palmLocations[i]; // length 18 array
-            const palm = decodePalm(palmFeature); // your custom decode function
-            palms.push({ palm, score: palmScores[i] });
+            // const palm = decodePalm(palmFeature); // your custom decode function
+            // palms.push({ palm, score: palmScores[i] });
           }
         }
     } catch (error) {

@@ -101,3 +101,18 @@ export abstract class OnnxRunner {
   abstract init(modelUrl: string, modelConfig: ModelConfig): Promise<void>;
   abstract run(input: DataSample): Promise<number>;
 }
+
+export class _OnnxRunner extends OnnxRunner {
+  config(): ModelConfig | null {
+    throw new Error("Not implemented");
+  }
+  isModelLoaded(): boolean {
+    throw new Error("Not implemented");
+  }
+  async init(modelUrl: string, modelConfig: ModelConfig): Promise<void> {
+    throw new Error("Not implemented");
+  }
+  async run(input: DataSample): Promise<number> {
+    throw new Error("Not implemented");
+  }
+}

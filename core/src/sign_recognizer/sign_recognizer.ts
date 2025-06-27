@@ -2,7 +2,6 @@ import { OnnxRunner, ModelConfig, ModelConfigFromJson } from "../onnx_interface"
 import { MediapipeRunner } from "../mediapipe_interface"
 import { DataSample } from "./datasample";
 import { DataGestures } from "./gestures/data_gestures"
-import { HandLandmarker, FilesetResolver, HandLandmarkerResult } from "@mediapipe/tasks-vision";
 
 import axios, { AxiosResponse } from "axios";
 import JSZip from "jszip";
@@ -44,7 +43,7 @@ export class SignRecognizer<T> {
   private lastPrediction: ModelsPredictions;
   private datasample: DataSample = new DataSample("test", []);
   private prevFrame: ImageData | null = null;
-  private canvas: HTMLCanvasElement = document.createElement("canvas");
+  // private canvas: HTMLCanvasElement = document.createElement("canvas");
   private clock: Clock = new Clock(30);
 
 
