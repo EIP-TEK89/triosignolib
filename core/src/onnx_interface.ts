@@ -2,6 +2,7 @@ import { DataSample } from "./sign_recognizer/datasample";
 import { ActiveGestures } from "./sign_recognizer/gestures/active_gestures";
 
 import axios, { AxiosResponse } from "axios";
+import RNFS from 'react-native-fs';
 import JSZip from "jszip";
 
 export interface ModelConfig {
@@ -36,7 +37,7 @@ export function ModelConfigFromJson(json: any): ModelConfig {
 
 export abstract class OnnxRunner {
   protected model_path: string | null = null
-  
+
   constructor(model_path: string | null) {
     this.model_path = model_path;
   }
@@ -49,22 +50,42 @@ export abstract class OnnxRunner {
    * @argument path: The URL of the ONNX model to load.
    */
   async load(path: string | null = null) {
-    console.log("Loading ONNX model...");
-    
+    console.log("Loading ONNX model...", path, this.model_path);
+
     let _path: string = ""
-  
+
     if (path === null) {
-      if (this.model_path === null)
-        throw new Error("No model to load (No model path spcified)")
+      if (this.model_path === null) {
+        throw new Error("No model to load (No model path specified)")
+      }
       _path = this.model_path
     } else {
       _path = path
     }
+let zipData: ArrayBuffer | null = null;
 
-    
+    console.log("Fetching model", _path);
+  // ✅ Attempt 1: load from local filesystem
+  try {
+    console.log("[ONNX] Trying to load model from local path:", _path);
+    const fileData = await RNFS.readFile(_path, 'base64');
+    zipData = Uint8Array.from(atob(fileData), c => c.charCodeAt(0)).buffer;
+    console.log("[ONNX] Successfully loaded from local storage.");
+  } catch (error) {
+    console.warn("[ONNX] Failed to read locally, falling back to axios:", error);
+
+    // ✅ Attempt 2: fetch from network
+    console.log("[ONNX] Fetching from network:", _path);
     const response: AxiosResponse = await axios.get(_path, { responseType: "arraybuffer" });
+    zipData = response.data;
+    console.log("[ONNX] Successfully downloaded from network.");
+  }
 
-    const zip = await JSZip.loadAsync(response.data);
+  if (!zipData) {
+    throw new Error("Failed to load ONNX model data from local or network sources.");
+  }
+    console.log("Unzipping");
+    const zip = await JSZip.loadAsync(zipData);
     let onnxFileBlob: Blob | null = null;
     let jsonFileText: string | null = null;
 
@@ -93,6 +114,7 @@ export abstract class OnnxRunner {
     // console.log("JSON Config:", this.sign_recongnizer_config);
     // console.log("Active Fields:", this.sign_recongnizer_config.active_gestures.getActiveFields());
 
+    console.log("Loading model...");
     await this.init(modelUrl, ModelConfigFromJson(JSON.parse(jsonFileText)))
     console.log("ONNX model loaded !");
   }

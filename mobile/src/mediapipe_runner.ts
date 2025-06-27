@@ -11,16 +11,36 @@ export class MediapipeRunnerMobile extends MediapipeRunner<Frame> {
     private hand_detector: TensorflowModel | null = null;
     private hand_landmarker: TensorflowModel | null = null;
 
+    private hand_detector_path: string = '../models/hand_detector.tflite';
+    private hand_landmarker_path: string = '../models/hand_landmarker.tflite';
+
+  constructor(
+    hand_detector_path: string | null = null,
+    hand_landmarker_path: string | null = null
+  ) {
+    super();
+    if (hand_detector_path) {
+      this.hand_detector_path = hand_detector_path;
+    }
+    if (hand_landmarker_path) {
+      this.hand_landmarker_path = hand_landmarker_path;
+    }
+  }
+
   async loadHandTrackModel() {
     console.log("Loading Hand Landmarker model...");
+    console.log("Hand Detector path:", this.hand_detector_path);
+    console.log("Hand Landmarker path:", this.hand_landmarker_path);
+    
     try {
-        this.hand_detector = await loadTensorflowModel({ url: '../models/hand_detector.tflite' })
+        this.hand_detector = await loadTensorflowModel({ url: this.hand_detector_path })
         console.log("Hand Detector model loaded!");
-        this.hand_landmarker = await loadTensorflowModel({ url: '../models/hand_landmarker.tflite' });
+        this.hand_landmarker = await loadTensorflowModel({ url: this.hand_landmarker_path });
         console.log("Hand Landmarker model loaded!");
     } catch (error) {
       console.error("Error loading Hand Landmarker model:", error);
     }
+    console.log("Hand tracking models loaded successfully.");
   }
 
   async runHandTrackModel(video: Frame): Promise<DataGestures> {
