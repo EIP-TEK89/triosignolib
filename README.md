@@ -1,19 +1,26 @@
 # triosignolib
 
-Description de la bibliothèque.
-
 ## Installation
 
 Clone this repo the root of your code space.
 
 Then:
 ```bash
-npm install ./triosignolib
+npm install ./triosignolib/core
+```
+Then depending you platform:
+> For web browser
+```bash
+npm install ./triosignolib/web
+```
+> For mobile (Android/IOS)
+```bash
+npm install ./triosignolob/mobile
 ```
 
 Then use it doing:
 ```ts
-import { WhateverYouWantToImportFromTheLib } from "triosignolib"
+import { WhateverYouWantToImportFromTheLib } from "triosigno-lib"
 ```
 Check the library documentation [here](https://github.com/EIP-TEK89/trio-signo-fullstack/wiki/TrioSignoLib)
 
@@ -29,7 +36,7 @@ export default defineConfig({
 	server: {
 		fs: {
 		  allow: [
-			path.resolve(__dirname, 'TriOSignOLIB')
+			path.resolve(__dirname, 'triosignolib')
 		  ]
 		}
 	  }
