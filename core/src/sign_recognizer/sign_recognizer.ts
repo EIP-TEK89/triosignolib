@@ -108,7 +108,7 @@ export class SignRecognizer<T> {
     //   this.prevFrame = currentFrame;
     // }
     const gesture: DataGestures | null = await this.mediapipe_session.runAll(elem);
-    this.lastPrediction.landmarks = gesture;
+    this.lastPrediction.landmarks = gesture.other_hand_gesture;
     // console.log(gesture)
 
 

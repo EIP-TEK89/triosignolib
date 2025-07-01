@@ -2,7 +2,7 @@ import { DataSample } from "./sign_recognizer/datasample";
 import { ActiveGestures } from "./sign_recognizer/gestures/active_gestures";
 
 import axios, { AxiosResponse } from "axios";
-import RNFS from 'react-native-fs';
+// import RNFS from 'react-native-fs';
 import JSZip from "jszip";
 
 export interface ModelConfig {
@@ -66,20 +66,20 @@ let zipData: ArrayBuffer | null = null;
 
     console.log("Fetching model", _path);
   // ✅ Attempt 1: load from local filesystem
-  try {
-    console.log("[ONNX] Trying to load model from local path:", _path);
-    const fileData = await RNFS.readFile(_path, 'base64');
-    zipData = Uint8Array.from(atob(fileData), c => c.charCodeAt(0)).buffer;
-    console.log("[ONNX] Successfully loaded from local storage.");
-  } catch (error) {
-    console.warn("[ONNX] Failed to read locally, falling back to axios:", error);
+  // try {
+  //   console.log("[ONNX] Trying to load model from local path:", _path);
+  //   const fileData = await RNFS.readFile(_path, 'base64');
+  //   zipData = Uint8Array.from(atob(fileData), c => c.charCodeAt(0)).buffer;
+  //   console.log("[ONNX] Successfully loaded from local storage.");
+  // } catch (error) {
+    // console.warn("[ONNX] Failed to read locally, falling back to axios:", error);
 
     // ✅ Attempt 2: fetch from network
     console.log("[ONNX] Fetching from network:", _path);
     const response: AxiosResponse = await axios.get(_path, { responseType: "arraybuffer" });
     zipData = response.data;
     console.log("[ONNX] Successfully downloaded from network.");
-  }
+  // }
 
   if (!zipData) {
     throw new Error("Failed to load ONNX model data from local or network sources.");

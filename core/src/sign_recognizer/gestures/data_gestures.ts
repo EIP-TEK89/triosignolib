@@ -18,6 +18,7 @@ function randFixInterval(limit: number): number {
 }
 
 export class DataGestures extends Gestures<[number, number, number] | null> {
+  public other_hand_gesture: DataGestures | null = null;
   constructor(init?: Partial<Gestures<[number, number, number] | null>>) {
     super(init);
   }
