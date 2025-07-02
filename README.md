@@ -73,6 +73,17 @@ To build all packages:
 
 This will build all packages without publishing them to npm.
 
+### Versioning
+
+To update the version numbers of all packages:
+
+```bash
+./version.sh patch  # For patch version increment (0.1.0 -> 0.1.1)
+./version.sh minor  # For minor version increment (0.1.0 -> 0.2.0)
+./version.sh major  # For major version increment (0.1.0 -> 1.0.0)
+./version.sh 2.0.0  # For specific version
+```
+
 ### Publishing Packages
 
 See [DEPLOY.md](DEPLOY.md) for detailed instructions on how to configure and use the automated publishing process.

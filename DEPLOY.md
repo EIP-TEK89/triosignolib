@@ -46,13 +46,36 @@ Si vous préférez publier manuellement les packages, vous pouvez toujours utili
 
 ## Gestion des versions
 
-Avant de déclencher une publication, assurez-vous de mettre à jour les versions dans les fichiers `package.json` de chaque package. Le script vérifiera automatiquement que les dépendances entre packages sont correctement configurées.
+Le projet utilise le script `version.sh` pour gérer les versions de tous les packages de manière cohérente. Ce script met à jour les versions dans tous les fichiers `package.json` et s'assure que les dépendances internes sont correctement configurées.
+
+### Utilisation du script de versionnement
+
+```bash
+# Incrémenter la version de patch (0.1.0 -> 0.1.1)
+./version.sh patch
+
+# Incrémenter la version mineure (0.1.0 -> 0.2.0)
+./version.sh minor
+
+# Incrémenter la version majeure (0.1.0 -> 1.0.0)
+./version.sh major
+
+# Définir une version spécifique
+./version.sh 2.0.0
+```
+
+### Versionnement dans GitHub Actions
+
+Lors d'un déclenchement manuel du workflow de déploiement, vous pouvez spécifier le type de mise à jour de version (patch, minor, major) ou une version spécifique. Le workflow mettra à jour les versions, commitera les changements et publiera les packages.
+
+Si le workflow est déclenché par la création d'une release GitHub, la version sera extraite du tag de la release. Par exemple, si vous créez une release avec le tag `v1.2.3`, les packages seront versionnés en `1.2.3`.
 
 ## Structure des scripts
 
-- `publish.sh` : Script principal qui orchestre tout le processus
+- `publish.sh` : Script principal qui orchestre tout le processus de publication
 - `publish-core.sh` : Publie le package core
 - `publish-web.sh` : Publie le package web
 - `publish-mobile.sh` : Publie le package mobile
+- `version.sh` : Gère la mise à jour des versions dans tous les packages
 
 Les scripts sont conçus pour être exécutés dans un environnement CI/CD et incluent diverses vérifications et validations pour s'assurer que le processus de publication se déroule correctement.

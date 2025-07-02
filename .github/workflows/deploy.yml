@@ -2,6 +2,16 @@ name: Deploy NPM Packages
 
 on:
   workflow_dispatch: # Allows manual triggering
+    inputs:
+      version:
+        description: "Version to bump (patch, minor, major, or x.y.z)"
+        required: true
+        default: "patch"
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
   release:
     types: [created] # Runs when a new release is created
 
@@ -11,6 +21,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
 
       - name: Setup Node.js
         uses: actions/setup-node@v3
@@ -24,6 +36,37 @@ jobs:
           chmod +x ./publish-core.sh
           chmod +x ./publish-web.sh
           chmod +x ./publish-mobile.sh
+          chmod +x ./version.sh
+
+      # Setup Git configuration
+      - name: Setup Git
+        run: |
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+
+      # Update version numbers
+      - name: Update versions
+        run: |
+          # For manual workflow trigger, use the provided version
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            ./version.sh ${{ github.event.inputs.version }}
+          # For release trigger, extract version from tag
+          elif [[ "${{ github.event_name }}" == "release" ]]; then
+            TAG_VERSION="${{ github.event.release.tag_name }}"
+            # Remove 'v' prefix if present
+            VERSION="${TAG_VERSION#v}"
+            ./version.sh $VERSION
+          else
+            # Default to patch version
+            ./version.sh patch
+          fi
+
+      # Commit version changes
+      - name: Commit version changes
+        run: |
+          git add */package.json
+          git commit -m "Bump versions [skip ci]" || echo "No changes to commit"
+          git push
 
       # Setup .npmrc file for authentication with NPM
       - name: Setup .npmrc file
