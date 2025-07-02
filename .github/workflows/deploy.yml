@@ -33,7 +33,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: "18"
+          node-version: "20" # Use Node.js 20 for compatibility
           registry-url: "https://registry.npmjs.org/"
 
       - name: Make scripts executable
