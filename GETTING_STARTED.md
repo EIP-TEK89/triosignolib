@@ -188,7 +188,8 @@ function SignDetector() {
 
       processingFrame = true;
       try {
-        const predictions = await recognizerRef.current.predictAsync(videoRef.current);
+        // Use predict instead of predictAsync for non-blocking behavior
+        const predictions = recognizerRef.current.predict(videoRef.current);
         setRecognizedSign(predictions.signLabel);
       } catch (error) {
         console.error('Error predicting sign:', error);
@@ -303,7 +304,8 @@ function SignDetector() {
       if (!recognizerRef.current || !isInitialized) return;
 
       try {
-        const predictions = await recognizerRef.current.predictAsync(frame);
+        // Use predict instead of predictAsync for non-blocking behavior
+        const predictions = recognizerRef.current.predict(frame);
         runOnJS(setRecognizedSign)(predictions.signLabel);
       } catch (error) {
         console.error('Error predicting sign:', error);
@@ -392,7 +394,12 @@ const onnxRunner = new OnnxRunnerMobile(
 The recognition results contain more than just the sign label:
 
 ```typescript
-const predictions = await signRecognizer.predictAsync(videoElement);
+// You can use either synchronous (non-blocking) or asynchronous (blocking) prediction
+// Synchronous (returns immediately with the latest prediction)
+const predictions = signRecognizer.predict(videoElement);
+
+// Asynchronous (waits for the prediction to complete)
+// const predictions = await signRecognizer.predictAsync(videoElement);
 
 // The recognized sign label (e.g., "A", "B", etc.)
 console.log("Sign:", predictions.signLabel);
