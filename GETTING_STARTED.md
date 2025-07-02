@@ -131,7 +131,13 @@ function SignDetector() {
 
         // Initialize ONNX model for sign recognition
         const onnxRunner = new OnnxRunnerWeb('/models/alphabet/model.onnx');
-        await onnxRunner.init();
+
+        // Load the model and its configuration
+        await this.session.load(); // This will load the model and parse the config
+
+        // Alternative: if you already have the configuration separately
+        // const modelConfig = {...your model config...};
+        // await onnxRunner.init('/models/alphabet/model.onnx', modelConfig);
 
         // Create the sign recognizer
         recognizerRef.current = new SignRecognizer(onnxRunner, mediapipeRunner);
@@ -182,7 +188,7 @@ function SignDetector() {
 
       processingFrame = true;
       try {
-        const predictions = await recognizerRef.current.predictFromVideo(videoRef.current);
+        const predictions = await recognizerRef.current.predictAsync(videoRef.current);
         setRecognizedSign(predictions.signLabel);
       } catch (error) {
         console.error('Error predicting sign:', error);
@@ -271,7 +277,13 @@ function SignDetector() {
         }
 
         const onnxRunner = new OnnxRunnerMobile(modelPath);
-        await onnxRunner.init();
+
+        // Load the model and its configuration
+        await onnxRunner.load(); // This will load the model and parse the config
+
+        // Alternative: if you already have the configuration separately
+        // const modelConfig = {...your model config...};
+        // await onnxRunner.init(modelPath, modelConfig);
 
         // Create the sign recognizer
         recognizerRef.current = new SignRecognizer(onnxRunner, mediapipeRunner);
@@ -291,7 +303,7 @@ function SignDetector() {
       if (!recognizerRef.current || !isInitialized) return;
 
       try {
-        const predictions = await recognizerRef.current.predictFromVideo(frame);
+        const predictions = await recognizerRef.current.predictAsync(frame);
         runOnJS(setRecognizedSign)(predictions.signLabel);
       } catch (error) {
         console.error('Error predicting sign:', error);
@@ -380,7 +392,7 @@ const onnxRunner = new OnnxRunnerMobile(
 The recognition results contain more than just the sign label:
 
 ```typescript
-const predictions = await signRecognizer.predictFromVideo(videoElement);
+const predictions = await signRecognizer.predictAsync(videoElement);
 
 // The recognized sign label (e.g., "A", "B", etc.)
 console.log("Sign:", predictions.signLabel);
@@ -395,7 +407,7 @@ console.log("Landmarks:", predictions.landmarks);
 You can use the landmarks to draw hand tracking visualization:
 
 ```typescript
-import { drawLandmarks } from "triosigno-lib-core";
+import { drawHandLandmarkerResult } from "triosigno-lib-core";
 
 // In your component:
 const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -405,7 +417,7 @@ if (canvasRef.current && predictions.landmarks) {
   const ctx = canvasRef.current.getContext("2d");
   if (ctx) {
     ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
-    drawLandmarks(ctx, predictions.landmarks);
+    drawHandLandmarkerResult(ctx, predictions.landmarks);
   }
 }
 ```
