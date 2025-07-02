@@ -36,9 +36,10 @@ This guide will walk you through the complete process of setting up and using th
 1. Create or navigate to your React project:
 
 ```bash
-# Create a new React project if needed
-npx create-react-app my-sign-app
+# Create a new React project with Vite
+npm create vite@latest my-sign-app -- --template react-ts
 cd my-sign-app
+npm install
 ```
 
 2. Install the TrioSigno libraries:
@@ -53,14 +54,16 @@ npm install triosigno-lib-core triosigno-lib-web
 npm install onnxruntime-web @mediapipe/tasks-vision
 ```
 
-4. Configure your build tools (for Vite, Webpack, etc.):
-
-For Vite, add to `vite.config.ts`:
+4. Configure Vite for WASM and file system access by creating or modifying `vite.config.ts`:
 
 ```typescript
 import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
+import path from "path";
 
+// https://vitejs.dev/config/
 export default defineConfig({
+  plugins: [react()],
   optimizeDeps: {
     exclude: ["onnxruntime-web"], // Ensures proper handling of WASM
   },
@@ -70,6 +73,20 @@ export default defineConfig({
     },
   },
 });
+```
+
+5. Create public directory for models and ensure it's accessible:
+
+```bash
+mkdir -p public/models/alphabet
+# Copy your model files to public/models/alphabet/
+```
+
+6. Make sure to use relative paths to access the model in Vite's development server:
+
+```typescript
+// When loading models in development
+const modelPath = "/models/alphabet/model.onnx"; // Relative to public directory
 ```
 
 ### For Mobile (React Native)
@@ -133,7 +150,7 @@ function SignDetector() {
         const onnxRunner = new OnnxRunnerWeb('/models/alphabet/model.onnx');
 
         // Load the model and its configuration
-        await this.session.load(); // This will load the model and parse the config
+        await onnxRunner.load(); // This will load the model and parse the config
 
         // Alternative: if you already have the configuration separately
         // const modelConfig = {...your model config...};
