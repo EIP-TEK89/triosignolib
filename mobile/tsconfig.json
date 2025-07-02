@@ -7,9 +7,14 @@
     "declaration": true,
     "esModuleInterop": true,
     "strict": true,
-    "skipLibCheck": true
-  },
-  "paths": {
-      "triosigno-lib": ["../core/src"]
+    "skipLibCheck": true,
+    "baseUrl": ".",
+    "paths": {
+      "triosigno-lib-core": ["./node_modules/triosigno-lib-core"],
+      "onnxruntime-react-native": ["./node_modules/onnxruntime-react-native"],
+      "react-native-fs": ["./node_modules/react-native-fs"]
     }
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist"]
 }

@@ -1,0 +1,41 @@
+{
+  "name": "triosigno-lib-monorepo",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Monorepo for TrioSigno sign language recognition libraries",
+  "scripts": {
+    "build:core": "cd core && npm run build",
+    "build:web": "cd web && npm run build",
+    "build:mobile": "cd mobile && npm run build",
+    "build:all": "npm run build:core && npm run build:web && npm run build:mobile",
+    "version:all": "./version.sh",
+    "publish:all": "./publish.sh",
+    "test:core": "cd core && npm test",
+    "test:web": "cd web && npm test",
+    "test:mobile": "cd mobile && npm test",
+    "test:all": "npm run test:core && npm run test:web && npm run test:mobile"
+  },
+  "workspaces": [
+    "core",
+    "web",
+    "mobile"
+  ],
+  "keywords": [
+    "sign-language",
+    "gesture-recognition",
+    "onnx",
+    "mediapipe",
+    "react",
+    "react-native"
+  ],
+  "author": "TrioSigno Team",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/EIP-TEK89/TriOSignOLIB.git"
+  },
+  "bugs": {
+    "url": "https://github.com/EIP-TEK89/TriOSignOLIB/issues"
+  },
+  "homepage": "https://github.com/EIP-TEK89/TriOSignOLIB#readme"
+}

@@ -1,5 +1,5 @@
 import * as ort from "onnxruntime-web";
-import { OnnxRunner, ModelConfig, DataSample, FIELDS, FIELD_DIMENSION } from "triosigno-lib";
+import { OnnxRunner, ModelConfig, DataSample, FIELDS, FIELD_DIMENSION } from "triosigno-lib-core";
 
 function softmax(arr: Float32Array): Float32Array {
   const max = Math.max(...arr);

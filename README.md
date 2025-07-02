@@ -1,63 +1,149 @@
-# triosignolib
+# TrioSigno Library
+
+This repository contains a collection of packages for sign language recognition:
+
+- **triosigno-lib-core**: Core TypeScript library for sign language recognition
+- **triosigno-lib-web**: Web implementation for React applications
+- **triosigno-lib-mobile**: Mobile implementation for React Native applications
 
 ## Installation
 
-Clone this repo the root of your code space.
+### For Web Applications (React)
 
-Then:
 ```bash
-npm install ./triosignolib/core
+npm install triosigno-lib-core triosigno-lib-web
 ```
-Then depending you platform:
-> For web browser
+
+### For Mobile Applications (React Native)
+
 ```bash
-npm install ./triosignolib/web
+npm install triosigno-lib-core triosigno-lib-mobile
 ```
-> For mobile (Android/IOS)
+
+## Usage
+
+### Web
+
+```typescript
+import { SignRecognizer } from "triosigno-lib-core";
+import { OnnxRunnerWeb } from "triosigno-lib-web";
+
+// Initialize the web implementation
+const onnxRunner = new OnnxRunnerWeb("/path/to/model.onnx");
+await onnxRunner.init();
+
+// Use it with SignRecognizer
+// ...
+```
+
+### Mobile (React Native)
+
+```typescript
+import { SignRecognizer } from "triosigno-lib-core";
+import { OnnxRunnerMobile } from "triosigno-lib-mobile";
+
+// Initialize the mobile implementation
+const onnxRunner = new OnnxRunnerMobile("/path/to/model.onnx");
+await onnxRunner.init();
+
+// Use it with SignRecognizer
+// ...
+```
+
+## Development
+
+### Project Structure
+
+```
+.
+├── core/            # Core TypeScript library
+├── web/             # Web implementation
+├── mobile/          # Mobile implementation
+├── examples/        # Example projects
+└── scripts/         # Build and development scripts
+```
+
+### Building Packages
+
+To build all packages:
+
 ```bash
-npm install ./triosignolob/mobile
+./publish.sh --dry-run
 ```
 
-Then use it doing:
-```ts
-import { WhateverYouWantToImportFromTheLib } from "triosigno-lib"
-```
-Check the library documentation [here](https://github.com/EIP-TEK89/trio-signo-fullstack/wiki/TrioSignoLib)
+This will build all packages without publishing them to npm.
 
-## Vite troubleshooting
-If you have a vite error telling you it cannot import the path of the lib,
-add this in your `vite.config.ts`.
-```ts
-import { defineConfig } from 'vite';
-import path from 'path';
+### Versioning
 
-export default defineConfig({
-	plugins: [sveltekit()],
-	server: {
-		fs: {
-		  allow: [
-			path.resolve(__dirname, 'triosignolib')
-		  ]
-		}
-	  }
-});
+To update the version numbers of all packages:
+
+```bash
+./version.sh patch  # For patch version increment (0.1.0 -> 0.1.1)
+./version.sh minor  # For minor version increment (0.1.0 -> 0.2.0)
+./version.sh major  # For major version increment (0.1.0 -> 1.0.0)
+./version.sh 2.0.0  # For specific version
 ```
 
-If in your web browser you get one of the following error`:
-- *GET
-http://localhost/node_modules/.vite/deps/ort-wasm-simd-threaded.jsep.wasm 404 not found*
-- *wasm streaming compile failed: TypeError: WebAssembly: Response has unsupported MIME type 'text/html' expected 'application/wasm'*
+### Publishing Packages
 
-add this to your `vite.config.ts`.
-```ts
-import { defineConfig } from 'vite';
+See [DEPLOY.md](DEPLOY.md) for detailed instructions on how to configure and use the automated publishing process.
+
+## Automated Deployment
+
+This project uses GitHub Actions for automated deployment:
+
+1. **Manual Trigger**: Go to the "Actions" tab in GitHub, select the "Deploy NPM Packages" workflow, and click "Run workflow". You can choose the version increment type (patch, minor, major).
+
+2. **Release Trigger**: Create a new release in GitHub with a tag (e.g., v1.2.0), and the workflow will automatically use that version number for all packages.
+
+The workflow will:
+
+- Update all package versions
+- Commit the changes back to the repository
+- Build and publish the packages to npm
+
+For more information on how to set up and use the automated deployment process, see [DEPLOY.md](DEPLOY.md).
+
+## Vite Troubleshooting
+
+If you encounter WASM-related issues with Vite, add this to your `vite.config.ts`:
+
+```typescript
+import { defineConfig } from "vite";
 
 export default defineConfig({
   optimizeDeps: {
-    exclude: ['onnxruntime-web'], // Ensures proper handling of WASM
+    exclude: ["onnxruntime-web"], // Ensures proper handling of WASM
   },
 });
 ```
 
-## EXPO GO troubleshooting
-> Nothing yet
+If you have a file system access error:
+
+```typescript
+import { defineConfig } from "vite";
+import path from "path";
+
+export default defineConfig({
+  plugins: [
+    /* your plugins */
+  ],
+  server: {
+    fs: {
+      allow: [path.resolve(__dirname, "node_modules")],
+    },
+  },
+});
+```
+
+## Documentation
+
+For detailed documentation, please refer to the individual package READMEs:
+
+- [triosigno-lib-core](./core/README.md)
+- [triosigno-lib-web](./web/README.md)
+- [triosigno-lib-mobile](./mobile/README.md)
+
+## License
+
+MIT
