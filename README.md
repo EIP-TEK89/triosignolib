@@ -26,28 +26,50 @@ npm install triosigno-lib-core triosigno-lib-mobile
 
 ```typescript
 import { SignRecognizer } from "triosigno-lib-core";
-import { OnnxRunnerWeb } from "triosigno-lib-web";
+import { OnnxRunnerWeb, MediapipeRunnerWeb } from "triosigno-lib-web";
 
-// Initialize the web implementation
+// Initialize the MediaPipe model for hand tracking
+const mediapipeRunner = new MediapipeRunnerWeb();
+await mediapipeRunner.loadHandTrackModel();
+
+// Initialize the ONNX model for sign recognition
 const onnxRunner = new OnnxRunnerWeb("/path/to/model.onnx");
 await onnxRunner.init();
 
-// Use it with SignRecognizer
-// ...
+// Create the sign recognizer with both models
+const signRecognizer = new SignRecognizer(onnxRunner, mediapipeRunner);
+
+// Process video frames (e.g., from webcam)
+const videoElement = document.getElementById("webcam") as HTMLVideoElement;
+const predictions = await signRecognizer.predictFromVideo(videoElement);
+
+// predictions.signLabel contains the recognized sign
+console.log("Recognized sign:", predictions.signLabel);
 ```
 
 ### Mobile (React Native)
 
 ```typescript
 import { SignRecognizer } from "triosigno-lib-core";
-import { OnnxRunnerMobile } from "triosigno-lib-mobile";
+import { OnnxRunnerMobile, MediapipeRunnerMobile } from "triosigno-lib-mobile";
+import { useFrame } from "react-native-vision-camera";
 
-// Initialize the mobile implementation
+// Initialize the MediaPipe model for hand tracking
+const mediapipeRunner = new MediapipeRunnerMobile();
+await mediapipeRunner.loadHandTrackModel();
+
+// Initialize the ONNX model for sign recognition
 const onnxRunner = new OnnxRunnerMobile("/path/to/model.onnx");
 await onnxRunner.init();
 
-// Use it with SignRecognizer
-// ...
+// Create the sign recognizer with both models
+const signRecognizer = new SignRecognizer(onnxRunner, mediapipeRunner);
+
+// Process video frames (e.g., from camera)
+useFrame((frame) => {
+  const predictions = await signRecognizer.predictFromVideo(frame);
+  console.log("Recognized sign:", predictions.signLabel);
+});
 ```
 
 ## Development
@@ -103,6 +125,14 @@ The workflow will:
 - Build and publish the packages to npm
 
 For more information on how to set up and use the automated deployment process, see [DEPLOY.md](DEPLOY.md).
+
+## Key Features
+
+- **Multi-platform support**: Works in both web and mobile environments
+- **MediaPipe integration**: Uses MediaPipe for accurate hand landmark detection
+- **ONNX model support**: Leverages ONNX Runtime for efficient model inference
+- **Modular architecture**: Separate packages for core functionality, web, and mobile
+- **TypeScript support**: Full TypeScript typing for improved developer experience
 
 ## Vite Troubleshooting
 
