@@ -1,19 +1,33 @@
 import * as ort from "onnxruntime-react-native";
-import { readFile } from 'react-native-fs';
-import { OnnxRunner, ModelConfig, DataSample, FIELDS, FIELD_DIMENSION } from "triosigno-lib";
+import { readFile } from "react-native-fs";
+import {
+  OnnxRunner,
+  ModelConfig,
+  DataSample,
+  FIELDS,
+  FIELD_DIMENSION,
+} from "triosigno-lib-core";
 
 function softmax(arr: Float32Array): Float32Array {
   const max = Math.max(...arr);
-  const exp = arr.map(x => Math.exp(x - max));
+  const exp = arr.map((x) => Math.exp(x - max));
   const sum = exp.reduce((a, b) => a + b, 0);
-  return new Float32Array(exp.map(x => x / sum));
+  return new Float32Array(exp.map((x) => x / sum));
 }
 
-function to_tensor(datasample: DataSample, sequenceLength: number, validFields: string[] = FIELDS): ort.Tensor {
+function to_tensor(
+  datasample: DataSample,
+  sequenceLength: number,
+  validFields: string[] = FIELDS
+): ort.Tensor {
   const fieldCount = validFields.length * FIELD_DIMENSION;
   const data = new Float32Array(sequenceLength * fieldCount);
 
-  for (let i = 0; i < Math.min(sequenceLength, datasample.gestures.length); i++) {
+  for (
+    let i = 0;
+    i < Math.min(sequenceLength, datasample.gestures.length);
+    i++
+  ) {
     const frameData = datasample.gestures[i].get1DArray(validFields);
     data.set(frameData, i * fieldCount);
   }
@@ -39,8 +53,8 @@ export class OnnxRunnerMobile extends OnnxRunner {
   }
 
   async init(modelUrl: string, modelConfig: ModelConfig): Promise<void> {
-    const buffer = await readFile(modelUrl, 'base64');
-    const uint8Model = Uint8Array.from(atob(buffer), c => c.charCodeAt(0));
+    const buffer = await readFile(modelUrl, "base64");
+    const uint8Model = Uint8Array.from(atob(buffer), (c) => c.charCodeAt(0));
     this.session = await ort.InferenceSession.create(uint8Model);
     this.modelConfig = modelConfig;
   }
@@ -52,7 +66,11 @@ export class OnnxRunnerMobile extends OnnxRunner {
       return -1;
     }
 
-    const tensor: ort.Tensor = to_tensor(input, config.memory_frame, config.active_gestures.getActiveFields());
+    const tensor: ort.Tensor = to_tensor(
+      input,
+      config.memory_frame,
+      config.active_gestures.getActiveFields()
+    );
     const inputName = this.session.inputNames[0];
     const feeds = { [inputName]: tensor };
 
