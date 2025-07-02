@@ -11,6 +11,15 @@ NC='\033[0m' # No Color
 # Variables par défaut
 DRY_RUN=false
 
+# Détecter le système d'exploitation pour la commande sed
+if [[ "$OSTYPE" == "darwin"* ]]; then
+  # macOS uses BSD sed
+  SED_INPLACE="sed -i ''"
+else
+  # Linux and others use GNU sed
+  SED_INPLACE="sed -i"
+fi
+
 # Traiter les arguments
 for arg in "$@"
 do
@@ -77,25 +86,39 @@ MOBILE_CORE_DEP_CLEAN=$(echo "$MOBILE_CORE_DEP" | sed 's/[\^~]//g')
 # Vérifier la compatibilité des versions
 if [ "$WEB_CORE_DEP_CLEAN" != "$CORE_VERSION" ]; then
   echo -e "${YELLOW}⚠️ La dépendance triosigno-lib-core dans web ($WEB_CORE_DEP_CLEAN) ne correspond pas à la dernière version ($CORE_VERSION)${NC}"
-  echo -e "${YELLOW}Voulez-vous mettre à jour cette dépendance ? (o/n)${NC}"
-  read -r answer
-  if [ "$answer" == "o" ] || [ "$answer" == "O" ]; then
-    echo -e "${YELLOW}Mise à jour de la dépendance triosigno-lib-core dans web...${NC}"
-    sed -i '' "s/\"triosigno-lib-core\": \".*\"/\"triosigno-lib-core\": \"^$CORE_VERSION\"/" "web/package.json"
+  
+  # En mode CI, mettre à jour automatiquement
+  if [ -n "$CI" ]; then
+    echo -e "${YELLOW}Mode CI détecté - Mise à jour automatique de la dépendance triosigno-lib-core dans web...${NC}"
+    $SED_INPLACE "s/\"triosigno-lib-core\": \".*\"/\"triosigno-lib-core\": \"^$CORE_VERSION\"/" "web/package.json"
   else
-    echo -e "${YELLOW}Conservation de la version actuelle.${NC}"
+    echo -e "${YELLOW}Voulez-vous mettre à jour cette dépendance ? (o/n)${NC}"
+    read -r answer
+    if [ "$answer" == "o" ] || [ "$answer" == "O" ]; then
+      echo -e "${YELLOW}Mise à jour de la dépendance triosigno-lib-core dans web...${NC}"
+      $SED_INPLACE "s/\"triosigno-lib-core\": \".*\"/\"triosigno-lib-core\": \"^$CORE_VERSION\"/" "web/package.json"
+    else
+      echo -e "${YELLOW}Conservation de la version actuelle.${NC}"
+    fi
   fi
 fi
 
 if [ "$MOBILE_CORE_DEP_CLEAN" != "$CORE_VERSION" ]; then
   echo -e "${YELLOW}⚠️ La dépendance triosigno-lib-core dans mobile ($MOBILE_CORE_DEP_CLEAN) ne correspond pas à la dernière version ($CORE_VERSION)${NC}"
-  echo -e "${YELLOW}Voulez-vous mettre à jour cette dépendance ? (o/n)${NC}"
-  read -r answer
-  if [ "$answer" == "o" ] || [ "$answer" == "O" ]; then
-    echo -e "${YELLOW}Mise à jour de la dépendance triosigno-lib-core dans mobile...${NC}"
-    sed -i '' "s/\"triosigno-lib-core\": \".*\"/\"triosigno-lib-core\": \"^$CORE_VERSION\"/" "mobile/package.json"
+  
+  # En mode CI, mettre à jour automatiquement
+  if [ -n "$CI" ]; then
+    echo -e "${YELLOW}Mode CI détecté - Mise à jour automatique de la dépendance triosigno-lib-core dans mobile...${NC}"
+    $SED_INPLACE "s/\"triosigno-lib-core\": \".*\"/\"triosigno-lib-core\": \"^$CORE_VERSION\"/" "mobile/package.json"
   else
-    echo -e "${YELLOW}Conservation de la version actuelle.${NC}"
+    echo -e "${YELLOW}Voulez-vous mettre à jour cette dépendance ? (o/n)${NC}"
+    read -r answer
+    if [ "$answer" == "o" ] || [ "$answer" == "O" ]; then
+      echo -e "${YELLOW}Mise à jour de la dépendance triosigno-lib-core dans mobile...${NC}"
+      $SED_INPLACE "s/\"triosigno-lib-core\": \".*\"/\"triosigno-lib-core\": \"^$CORE_VERSION\"/" "mobile/package.json"
+    else
+      echo -e "${YELLOW}Conservation de la version actuelle.${NC}"
+    fi
   fi
 fi
 

@@ -50,6 +50,39 @@ await onnxRunner.init();
 // ...
 ```
 
+## Development
+
+### Project Structure
+
+```
+.
+├── core/            # Core TypeScript library
+├── web/             # Web implementation
+├── mobile/          # Mobile implementation
+├── examples/        # Example projects
+└── scripts/         # Build and development scripts
+```
+
+### Building Packages
+
+To build all packages:
+
+```bash
+./publish.sh --dry-run
+```
+
+This will build all packages without publishing them to npm.
+
+### Publishing Packages
+
+See [DEPLOY.md](DEPLOY.md) for detailed instructions on how to configure and use the automated publishing process.
+
+## Automated Deployment
+
+This project uses GitHub Actions for automated deployment. The workflow is defined in `.github/workflows/deploy.yml`.
+
+For more information on how to set up and use the automated deployment process, see [DEPLOY.md](DEPLOY.md).
+
 ## Vite Troubleshooting
 
 If you encounter WASM-related issues with Vite, add this to your `vite.config.ts`:

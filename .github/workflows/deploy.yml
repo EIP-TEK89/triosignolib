@@ -1,0 +1,39 @@
+name: Deploy NPM Packages
+
+on:
+  workflow_dispatch: # Allows manual triggering
+  release:
+    types: [created] # Runs when a new release is created
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "18"
+          registry-url: "https://registry.npmjs.org/"
+
+      - name: Make scripts executable
+        run: |
+          chmod +x ./publish.sh
+          chmod +x ./publish-core.sh
+          chmod +x ./publish-web.sh
+          chmod +x ./publish-mobile.sh
+
+      # Setup .npmrc file for authentication with NPM
+      - name: Setup .npmrc file
+        run: |
+          echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > .npmrc
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      # Execute the publish script that orchestrates the whole process
+      - name: Publish packages
+        run: ./publish.sh
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
