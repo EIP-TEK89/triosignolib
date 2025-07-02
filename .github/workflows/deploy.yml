@@ -18,6 +18,8 @@ on:
 jobs:
   publish:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write # Needed for pushing version changes
     steps:
       - name: Checkout code
         uses: actions/checkout@v3

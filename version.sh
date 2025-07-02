@@ -8,13 +8,36 @@ YELLOW='\033[1;33m'
 RED='\033[0;31m'
 NC='\033[0m' # No Color
 
+# Variables par défaut
+DRY_RUN=false
+
+# Traiter les arguments
+for arg in "$@"
+do
+  case $arg in
+    --dry-run)
+      DRY_RUN=true
+      shift
+      ;;
+    *)
+      # Si le premier argument non reconnu, on le traite comme VERSION
+      if [ -z "$VERSION" ]; then
+        VERSION="$arg"
+      fi
+      shift
+      ;;
+  esac
+done
+
 # Vérifier qu'un argument de version a été fourni
-if [ -z "$1" ]; then
+if [ -z "$VERSION" ]; then
   echo -e "${RED}Erreur: Veuillez fournir un numéro de version (patch, minor, major ou x.y.z)${NC}"
   exit 1
 fi
 
-VERSION=$1
+if [ "$DRY_RUN" = true ]; then
+  echo -e "${YELLOW}Mode simulation activé (--dry-run) - aucun fichier ne sera modifié${NC}"
+fi
 
 echo -e "${YELLOW}Mise à jour des versions vers $VERSION${NC}"
 
@@ -69,35 +92,40 @@ update_version_in_package_json() {
   
   echo -e "${YELLOW}Mise à jour de $package_dir de $current_version à $new_version${NC}"
   
-  # Sauvegarder le fichier original
-  cp "$package_dir/package.json" "$package_dir/package.json.bak"
-  
-  # Utilisation de sed pour remplacer la version dans le fichier package.json
-  if [[ "$OSTYPE" == "darwin"* ]]; then
-    # macOS
-    sed -i '' "s/\"version\": \"$current_version\"/\"version\": \"$new_version\"/" "$package_dir/package.json"
+  # Ne pas mettre à jour les fichiers en mode dry-run
+  if [ "$DRY_RUN" = true ]; then
+    echo -e "${YELLOW}Mode simulation - Le fichier $package_dir/package.json ne sera pas modifié${NC}"
   else
-    # Linux
-    sed -i "s/\"version\": \"$current_version\"/\"version\": \"$new_version\"/" "$package_dir/package.json"
+    # Sauvegarder le fichier original
+    cp "$package_dir/package.json" "$package_dir/package.json.bak"
+    
+    # Utilisation de sed pour remplacer la version dans le fichier package.json
+    if [[ "$OSTYPE" == "darwin"* ]]; then
+      # macOS
+      sed -i '' "s/\"version\": \"$current_version\"/\"version\": \"$new_version\"/" "$package_dir/package.json"
+    else
+      # Linux
+      sed -i "s/\"version\": \"$current_version\"/\"version\": \"$new_version\"/" "$package_dir/package.json"
+    fi
+    
+    # Vérifier que la mise à jour a fonctionné
+    if [ $? -ne 0 ]; then
+      echo -e "${RED}✗ Échec de mise à jour du package $package_dir${NC}"
+      mv "$package_dir/package.json.bak" "$package_dir/package.json"
+      return 1
+    fi
+    
+    # Vérifier que la version a bien été mise à jour
+    local updated_version=$(node -e "console.log(require('./$package_dir/package.json').version)")
+    if [ "$updated_version" != "$new_version" ]; then
+      echo -e "${RED}✗ La version n'a pas été correctement mise à jour dans $package_dir/package.json${NC}"
+      mv "$package_dir/package.json.bak" "$package_dir/package.json"
+      return 1
+    fi
+    
+    # Tout s'est bien passé, suppression du backup
+    rm "$package_dir/package.json.bak"
   fi
-  
-  # Vérifier que la mise à jour a fonctionné
-  if [ $? -ne 0 ]; then
-    echo -e "${RED}✗ Échec de mise à jour du package $package_dir${NC}"
-    mv "$package_dir/package.json.bak" "$package_dir/package.json"
-    return 1
-  fi
-  
-  # Vérifier que la version a bien été mise à jour
-  local updated_version=$(node -e "console.log(require('./$package_dir/package.json').version)")
-  if [ "$updated_version" != "$new_version" ]; then
-    echo -e "${RED}✗ La version n'a pas été correctement mise à jour dans $package_dir/package.json${NC}"
-    mv "$package_dir/package.json.bak" "$package_dir/package.json"
-    return 1
-  fi
-  
-  # Tout s'est bien passé, suppression du backup
-  rm "$package_dir/package.json.bak"
   
   # Stocker la nouvelle version dans une variable globale pour le package courant
   if [ "$package_dir" == "core" ]; then
@@ -123,27 +151,32 @@ update_internal_dependencies() {
   if [ "$has_dependency" == "yes" ]; then
     echo -e "${YELLOW}Mise à jour de la dépendance $dependency dans $package_dir vers ^$dependency_version${NC}"
     
-    # Sauvegarder le fichier original
-    cp "$package_dir/package.json" "$package_dir/package.json.bak"
-    
-    # Utilisation de sed pour remplacer la version de la dépendance
-    if [[ "$OSTYPE" == "darwin"* ]]; then
-      # macOS
-      sed -i '' "s/\"$dependency\": \".*\"/\"$dependency\": \"^$dependency_version\"/" "$package_dir/package.json"
+    # Ne pas mettre à jour les fichiers en mode dry-run
+    if [ "$DRY_RUN" = true ]; then
+      echo -e "${YELLOW}Mode simulation - Le fichier $package_dir/package.json ne sera pas modifié${NC}"
     else
-      # Linux
-      sed -i "s/\"$dependency\": \".*\"/\"$dependency\": \"^$dependency_version\"/" "$package_dir/package.json"
+      # Sauvegarder le fichier original
+      cp "$package_dir/package.json" "$package_dir/package.json.bak"
+      
+      # Utilisation de sed pour remplacer la version de la dépendance
+      if [[ "$OSTYPE" == "darwin"* ]]; then
+        # macOS
+        sed -i '' "s/\"$dependency\": \".*\"/\"$dependency\": \"^$dependency_version\"/" "$package_dir/package.json"
+      else
+        # Linux
+        sed -i "s/\"$dependency\": \".*\"/\"$dependency\": \"^$dependency_version\"/" "$package_dir/package.json"
+      fi
+      
+      # Vérifier que la mise à jour a fonctionné
+      if [ $? -ne 0 ]; then
+        echo -e "${RED}✗ Échec de mise à jour de la dépendance $dependency dans $package_dir${NC}"
+        mv "$package_dir/package.json.bak" "$package_dir/package.json"
+        return 1
+      fi
+      
+      # Tout s'est bien passé, suppression du backup
+      rm "$package_dir/package.json.bak"
     fi
-    
-    # Vérifier que la mise à jour a fonctionné
-    if [ $? -ne 0 ]; then
-      echo -e "${RED}✗ Échec de mise à jour de la dépendance $dependency dans $package_dir${NC}"
-      mv "$package_dir/package.json.bak" "$package_dir/package.json"
-      return 1
-    fi
-    
-    # Tout s'est bien passé, suppression du backup
-    rm "$package_dir/package.json.bak"
   fi
   
   return 0

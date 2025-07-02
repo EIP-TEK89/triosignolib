@@ -90,7 +90,17 @@ See [DEPLOY.md](DEPLOY.md) for detailed instructions on how to configure and use
 
 ## Automated Deployment
 
-This project uses GitHub Actions for automated deployment. The workflow is defined in `.github/workflows/deploy.yml`.
+This project uses GitHub Actions for automated deployment:
+
+1. **Manual Trigger**: Go to the "Actions" tab in GitHub, select the "Deploy NPM Packages" workflow, and click "Run workflow". You can choose the version increment type (patch, minor, major).
+
+2. **Release Trigger**: Create a new release in GitHub with a tag (e.g., v1.2.0), and the workflow will automatically use that version number for all packages.
+
+The workflow will:
+
+- Update all package versions
+- Commit the changes back to the repository
+- Build and publish the packages to npm
 
 For more information on how to set up and use the automated deployment process, see [DEPLOY.md](DEPLOY.md).
 

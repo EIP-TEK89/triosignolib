@@ -10,8 +10,21 @@ Le projet est configuré pour utiliser GitHub Actions afin d'automatiser le proc
 
 Le workflow peut être déclenché de deux manières :
 
-- Manuellement depuis l'interface GitHub (onglet "Actions")
-- Automatiquement lors de la création d'une nouvelle release GitHub
+- **Manuellement depuis l'interface GitHub** :
+  1. Allez dans l'onglet "Actions" du dépôt
+  2. Sélectionnez le workflow "Deploy NPM Packages"
+  3. Cliquez sur "Run workflow"
+  4. Sélectionnez le type de mise à jour de version (patch, minor, major)
+  5. Cliquez sur "Run workflow"
+
+- **Automatiquement lors de la création d'une nouvelle release GitHub** :
+  1. Allez dans l'onglet "Releases" du dépôt
+  2. Cliquez sur "Draft a new release"
+  3. Créez un tag de version (par exemple `v1.2.0`)
+  4. Remplissez les autres informations de la release
+  5. Cliquez sur "Publish release"
+
+  Le workflow utilisera automatiquement le numéro de version du tag (sans le préfixe 'v') pour mettre à jour tous les packages.
 
 ### Configuration requise
 
