@@ -83,6 +83,29 @@ Lors d'un déclenchement manuel du workflow de déploiement, vous pouvez spécif
 
 Si le workflow est déclenché par la création d'une release GitHub, la version sera extraite du tag de la release. Par exemple, si vous créez une release avec le tag `v1.2.3`, les packages seront versionnés en `1.2.3`.
 
+## Particularités du déploiement automatique
+
+### Gestion du "detached HEAD" dans GitHub Actions
+
+Lors de l'exécution du workflow via une release GitHub, l'action checkout est effectuée dans un état "detached HEAD" car GitHub Actions récupère le code au niveau du tag de la release plutôt que sur une branche. Cela peut poser des problèmes lors de la tentative de commit et push des changements de version.
+
+Notre workflow résout ce problème de la manière suivante :
+
+1. **Détection de la branche cible** : Lors d'un événement de release, le workflow détermine automatiquement la branche par défaut du dépôt (généralement `main` ou `master`).
+
+2. **Gestion du detached HEAD** : Si le workflow détecte qu'il est en état "detached HEAD", il :
+   - Récupère la dernière version de la branche cible
+   - Crée une nouvelle branche temporaire basée sur la branche cible
+   - Applique les modifications de version
+   - Pousse les changements vers la branche cible
+
+Cette approche garantit que les mises à jour de version sont correctement commitées et poussées dans le dépôt, même lorsque le workflow est déclenché par une release.
+
+### Précautions et limites
+
+- Assurez-vous que le token GitHub utilisé dispose des permissions suffisantes pour pousser des commits sur la branche cible.
+- Si vous avez configuré des règles de protection de branche strictes, vous devrez peut-être les ajuster pour permettre au workflow GitHub Actions de pousser directement sur la branche protégée.
+
 ## Structure des scripts
 
 - `publish.sh` : Script principal qui orchestre tout le processus de publication

@@ -20,11 +20,15 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write # Needed for pushing version changes
+      packages: write # Needed for publishing packages
+      id-token: write # Needed for authentication
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-tags: true
 
       - name: Setup Node.js
         uses: actions/setup-node@v3
@@ -46,6 +50,42 @@ jobs:
           git config --global user.name "GitHub Actions"
           git config --global user.email "actions@github.com"
 
+      # Get the current branch name or determine target branch
+      - name: Get branch name
+        id: branch-name
+        run: |
+          # For release events, we need to determine which branch the tag was created from
+          if [[ "${{ github.event_name }}" == "release" ]]; then
+            # Find the default branch for the repository
+            DEFAULT_BRANCH=$(git remote show origin | grep "HEAD branch" | cut -d ":" -f 2 | xargs)
+            echo "Default branch detected: $DEFAULT_BRANCH"
+            
+            # Use the default branch if available, otherwise fall back to main
+            TARGET_BRANCH="${DEFAULT_BRANCH:-main}"
+            echo "branch=$TARGET_BRANCH" >> $GITHUB_OUTPUT
+            echo "Release event detected. Target branch: $TARGET_BRANCH"
+          else
+            # For other events, try to get the current branch name
+            BRANCH_NAME=$(git symbolic-ref --short HEAD 2>/dev/null || echo "")
+            
+            # If we couldn't get the branch name, use the GitHub ref
+            if [ -z "$BRANCH_NAME" ]; then
+              if [[ "${{ github.ref }}" == "refs/heads/"* ]]; then
+                # For a branch push
+                BRANCH_NAME="${{ github.ref_name }}"
+              elif [[ "${{ github.ref }}" == "refs/pull/"* ]]; then
+                # For a pull request
+                BRANCH_NAME="${{ github.head_ref }}"
+              else
+                # Default to main branch
+                BRANCH_NAME="main"
+              fi
+            fi
+            
+            echo "branch=$BRANCH_NAME" >> $GITHUB_OUTPUT
+            echo "Current branch: $BRANCH_NAME"
+          fi
+
       # Update version numbers
       - name: Update versions
         run: |
@@ -66,9 +106,61 @@ jobs:
       # Commit version changes
       - name: Commit version changes
         run: |
-          git add */package.json
-          git commit -m "Bump versions [skip ci]" || echo "No changes to commit"
-          git push
+          # Check if there are changes to commit
+          if [[ $(git status --porcelain */package.json) ]]; then
+            # Get the target branch from previous step
+            TARGET_BRANCH="${{ steps.branch-name.outputs.branch }}"
+            
+            # If we're in a detached HEAD state (like during a release event)
+            if git rev-parse --abbrev-ref HEAD | grep -q "HEAD"; then
+              echo "Detected detached HEAD state, will checkout $TARGET_BRANCH"
+              
+              # Fetch the latest state of the target branch
+              git fetch origin "$TARGET_BRANCH" || {
+                echo "⚠️ Failed to fetch branch $TARGET_BRANCH. Using main as fallback."
+                TARGET_BRANCH="main"
+                git fetch origin main
+              }
+              
+              # Create a new local branch based on the target branch
+              TEMP_BRANCH="version-update-$RANDOM"
+              git checkout -b "$TEMP_BRANCH" "origin/$TARGET_BRANCH" || {
+                echo "⚠️ Failed to checkout origin/$TARGET_BRANCH. Creating new branch from current HEAD."
+                git checkout -b "$TEMP_BRANCH"
+              }
+              
+              # Apply our changes on top
+              git add */package.json
+              git commit -m "Bump versions [skip ci]"
+              
+              # Push to the target branch
+              if git push origin HEAD:"$TARGET_BRANCH"; then
+                echo "✅ Successfully pushed changes to $TARGET_BRANCH"
+              else
+                echo "⚠️ Failed to push to $TARGET_BRANCH. Will push to a new branch instead."
+                git push origin "$TEMP_BRANCH"
+                echo "✅ Pushed changes to new branch: $TEMP_BRANCH"
+                echo "Please manually merge this branch into your main branch."
+              fi
+            else
+              # We're already on a branch, just commit and push
+              git add */package.json
+              git commit -m "Bump versions [skip ci]"
+              
+              if git push --set-upstream origin "$TARGET_BRANCH"; then
+                echo "✅ Successfully pushed changes to $TARGET_BRANCH"
+              else
+                echo "⚠️ Failed to push to $TARGET_BRANCH. Creating a new branch."
+                TEMP_BRANCH="version-update-$RANDOM"
+                git checkout -b "$TEMP_BRANCH"
+                git push origin "$TEMP_BRANCH"
+                echo "✅ Pushed changes to new branch: $TEMP_BRANCH"
+                echo "Please manually merge this branch into your main branch."
+              fi
+            fi
+          else
+            echo "No changes to commit"
+          fi
 
       # Setup .npmrc file for authentication with NPM
       - name: Setup .npmrc file
