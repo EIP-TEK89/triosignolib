@@ -174,6 +174,10 @@ For detailed documentation, please refer to the individual package READMEs:
 - [triosigno-lib-web](./web/README.md)
 - [triosigno-lib-mobile](./mobile/README.md)
 
+## Getting Started Guide
+
+For a complete step-by-step guide on how to download models and implement the TrioSigno library with camera integration, see our [Getting Started Guide](./GETTING_STARTED.md).
+
 ## License
 
 MIT
