@@ -38,11 +38,11 @@ jobs:
 
       - name: Make scripts executable
         run: |
-          chmod +x ./publish.sh
-          chmod +x ./publish-core.sh
-          chmod +x ./publish-web.sh
-          chmod +x ./publish-mobile.sh
-          chmod +x ./version.sh
+          chmod +x ./scripts/publish.sh
+          chmod +x ./scripts/publish-core.sh
+          chmod +x ./scripts/publish-web.sh
+          chmod +x ./scripts/publish-mobile.sh
+          chmod +x ./scripts/version.sh
 
       # Setup Git configuration
       - name: Setup Git
@@ -91,16 +91,16 @@ jobs:
         run: |
           # For manual workflow trigger, use the provided version
           if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
-            ./version.sh ${{ github.event.inputs.version }}
+            ./scripts/version.sh ${{ github.event.inputs.version }}
           # For release trigger, extract version from tag
           elif [[ "${{ github.event_name }}" == "release" ]]; then
             TAG_VERSION="${{ github.event.release.tag_name }}"
             # Remove 'v' prefix if present
             VERSION="${TAG_VERSION#v}"
-            ./version.sh $VERSION
+            ./scripts/version.sh $VERSION
           else
             # Default to patch version
-            ./version.sh patch
+            ./scripts/version.sh patch
           fi
 
       # Commit version changes
@@ -171,6 +171,6 @@ jobs:
 
       # Execute the publish script that orchestrates the whole process
       - name: Publish packages
-        run: ./publish.sh
+        run: ./scripts/publish.sh
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
