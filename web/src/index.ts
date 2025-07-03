@@ -1,12 +1,5 @@
-import { setRNFS } from "triosigno-lib-core";
-
-// Initialiser une implémentation factice de RNFS pour l'environnement web
-setRNFS({
-  exists: async () => false,
-  readFile: async () => {
-    throw new Error("readFile not available in web environment");
-  },
-});
+// Web implementation doesn't need file system access
+// Just re-export the functionality we need from the runners
 
 export * from "./onnx_runner";
 export * from "./mediapipe_runner";

@@ -1,6 +1,6 @@
 {
   "name": "triosigno-lib-web",
-  "version": "1.1.2",
+  "version": "1.1.4",
   "description": "Web implementation of TrioSigno sign language recognition library for React applications",
   "main": "./dist/index.js",
   "type": "module",
@@ -51,8 +51,10 @@
     "vite-plugin-wasm": "^3.4.1"
   },
   "dependencies": {
+    "@mediapipe/tasks-vision": "^0.10.10",
+    "jszip": "^3.10.1",
     "onnxruntime-web": "^1.21.1",
-    "triosigno-lib-core": "^1.1.2"
+    "triosigno-lib-core": "^1.1.4"
   },
   "peerDependencies": {
     "react": "^19.0.0 || ^18.0.0 || ^17.0.0 || ^16.8.0",
