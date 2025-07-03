@@ -41,6 +41,10 @@ export function drawHandLandmarkerResult(
         lineWidth = 2,
     } = options;
 
+    if (result.other_hand_gesture !== null) {
+        result = result.other_hand_gesture;
+    }
+
     ctx.lineWidth = lineWidth;
     ctx.strokeStyle = lineColor;
     ctx.fillStyle = pointColor;
@@ -52,8 +56,8 @@ export function drawHandLandmarkerResult(
         const endLandmark: [number, number, number] | null = result.getFieldData(end);
 
         if (startLandmark && endLandmark) {
-            ctx.moveTo(startLandmark[0] * ctx.canvas.width, startLandmark[1] * ctx.canvas.height);
-            ctx.lineTo(endLandmark[0] * ctx.canvas.width, endLandmark[1] * ctx.canvas.height);
+            ctx.moveTo(-startLandmark[0] * ctx.canvas.width, startLandmark[1] * ctx.canvas.height);
+            ctx.lineTo(-endLandmark[0] * ctx.canvas.width, endLandmark[1] * ctx.canvas.height);
         }
     }
     ctx.stroke();
@@ -62,7 +66,7 @@ export function drawHandLandmarkerResult(
         ctx.beginPath();
         const point: [number, number, number] | null = result.getFieldData(field);
         if (!point) continue;
-        ctx.arc(point[0] * ctx.canvas.width, point[0] * ctx.canvas.height, pointSize, 0, 2 * Math.PI);
+        ctx.arc(-point[0] * ctx.canvas.width, point[1] * ctx.canvas.height, pointSize, 0, 2 * Math.PI);
         ctx.fill();
     }
 }

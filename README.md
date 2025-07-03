@@ -166,6 +166,32 @@ export default defineConfig({
 });
 ```
 
+## EXPO GO troubleshooting
+In case of this error
+```
+ERROR  Frame Processor Error: Frame.toArrayBuffer() is only available if minSdkVersion is set to 26 or higher!, js engine: VisionCamera
+```
+Install this
+```
+npx expo install expo-build-properties
+```
+And add this in your app.json
+```json
+{
+	"expo": {
+		"plugins": [
+	  		[
+				"expo-build-properties",
+				{
+		  			"android": {
+						"minSdkVersion": 26
+		  			}
+				}
+	  		],
+		]
+  	}
+}
+````
 ## Documentation
 
 For detailed documentation, please refer to the individual package READMEs:
