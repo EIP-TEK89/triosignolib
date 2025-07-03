@@ -84,7 +84,7 @@ export class SignRecognizer<T> {
    * I recommend to set it true unless you are encountering bug or debugging.
    * @returns A ModelsPrediction object containing the latest model prediction.
    */
-  async predictAsync(elem: T, lazy: boolean = true): Promise<ModelsPredictions> {
+  async predictAsync(elem: T, landmark: DataGestures | null = null): Promise<ModelsPredictions> {
 
     if (this.isPredicting) {
       return this.lastPrediction
@@ -107,7 +107,7 @@ export class SignRecognizer<T> {
     //   }
     //   this.prevFrame = currentFrame;
     // }
-    const gesture: DataGestures | null = await this.mediapipe_session.runAll(elem);
+    const gesture: DataGestures = (landmark === null) ? await this.mediapipe_session.runAll(elem) : landmark;
     this.lastPrediction.landmarks = gesture;
     // console.log(gesture)
 
@@ -145,9 +145,9 @@ export class SignRecognizer<T> {
    * @param lazy Optimize the prediction by skipping similar frames, I recommend to set it false only if you want to debug
    * @returns A ModelsPrediction object containing the latest model prediction.
    */
-  predict(elem: T, lazy: boolean = true): ModelsPredictions {
+  predict(elem: T, landmark: DataGestures | null = null): ModelsPredictions {
     if (!this.isPredicting) {
-      this.predictAsync(elem, lazy);
+      this.predictAsync(elem, landmark);
     }
     return this.lastPrediction;
   }
