@@ -26,7 +26,7 @@ export class MediapipeRunnerWeb extends MediapipeRunner<HTMLVideoElement> {
         console.log("Hand Landmarker model loaded !");
     }
 
-    async runHandTrackModel(video: HTMLVideoElement): Promise<DataGestures> {
+    runHandTrackModel(video: HTMLVideoElement): DataGestures {
         const gesture: DataGestures = new DataGestures();
 
         if (video.videoHeight === 0 || video.videoWidth === 0) {
@@ -63,7 +63,7 @@ export class MediapipeRunnerWeb extends MediapipeRunner<HTMLVideoElement> {
         throw new Error("Not implemented")
     }
     async runAll(video: HTMLVideoElement): Promise<DataGestures> {
-        let handGesture: DataGestures = await this.runHandTrackModel(video);
+        let handGesture: DataGestures = this.runHandTrackModel(video);
         return handGesture;
     }
 }
