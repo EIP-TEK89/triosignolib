@@ -1,6 +1,6 @@
 {
   "name": "triosigno-lib-mobile",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Mobile implementation of TrioSigno sign language recognition library for React Native applications",
   "main": "./dist/index.js",
   "type": "module",
@@ -34,7 +34,7 @@
     "react-native-fast-tflite": "^1.6.1",
     "react-native-fs": "^2.20.0",
     "react-native-vision-camera": "^4.6.4",
-    "triosigno-lib-core": "^1.1.0",
+    "triosigno-lib-core": "^1.1.1",
     "vision-camera-resize-plugin": "^3.2.0"
   },
   "peerDependencies": {
