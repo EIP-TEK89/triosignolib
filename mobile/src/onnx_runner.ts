@@ -1,6 +1,6 @@
 import * as ort from "onnxruntime-react-native";
 import { readFile } from 'react-native-fs';
-import { OnnxRunner, ModelConfig, DataSample, FIELDS, FIELD_DIMENSION, ModelConfigFromJson } from "triosigno-lib";
+import { OnnxRunner, ModelConfig, DataSample, FIELDS, FIELD_DIMENSION, ModelConfigFromJson } from "triosigno-lib-core";
 import JSZip from "jszip";
 import * as FileSystem from 'expo-file-system';
 import { Buffer } from 'buffer';

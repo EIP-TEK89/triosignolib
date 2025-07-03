@@ -1,12 +1,19 @@
 import * as ort from "onnxruntime-web";
-import { OnnxRunner, ModelConfig, DataSample, FIELDS, FIELD_DIMENSION, ModelConfigFromJson } from "triosigno-lib";
+import {
+  OnnxRunner,
+  ModelConfig,
+  DataSample,
+  FIELDS,
+  FIELD_DIMENSION,
+  ModelConfigFromJson,
+} from "triosigno-lib-core";
 import JSZip from "jszip";
 
 function softmax(arr: Float32Array): Float32Array {
   const max = Math.max(...arr);
-  const exp = arr.map(x => Math.exp(x - max));  // Avoid overflow
+  const exp = arr.map((x) => Math.exp(x - max)); // Avoid overflow
   const sum = exp.reduce((a, b) => a + b, 0);
-  return new Float32Array(exp.map(x => x / sum));
+  return new Float32Array(exp.map((x) => x / sum));
 }
 
 /**
@@ -15,13 +22,21 @@ function softmax(arr: Float32Array): Float32Array {
  * @param validFields List of valid fields to extract from gestures.
  * @returns `ort.Tensor` (ONNX Runtime)
  */
-function to_tensor(datasample: DataSample, sequenceLength: number, validFields: string[] = FIELDS): ort.Tensor {
+function to_tensor(
+  datasample: DataSample,
+  sequenceLength: number,
+  validFields: string[] = FIELDS
+): ort.Tensor {
   const fieldCount = validFields.length * FIELD_DIMENSION;
 
   // Initialize a Float32Array for ONNX Tensor storage
   const data = new Float32Array(sequenceLength * fieldCount);
 
-  for (let i = 0; i < Math.min(sequenceLength, datasample.gestures.length); i++) {
+  for (
+    let i = 0;
+    i < Math.min(sequenceLength, datasample.gestures.length);
+    i++
+  ) {
     const frameData = datasample.gestures[i].get1DArray(validFields);
 
     // Insert frame data into the main tensor array
@@ -34,13 +49,12 @@ function to_tensor(datasample: DataSample, sequenceLength: number, validFields: 
   return new ort.Tensor("float32", data, tensorShape);
 }
 
-
 export class OnnxRunnerWeb extends OnnxRunner {
   session: ort.InferenceSession | null = null;
   modelConfig: ModelConfig | null = null;
 
   constructor(model_path: string | null = null) {
-    super(model_path)
+    super(model_path);
   }
 
   config(): ModelConfig | null {
@@ -60,7 +74,7 @@ export class OnnxRunnerWeb extends OnnxRunner {
     for (const filename of Object.keys(data.files)) {
       // console.log("[ONNX-web] Found file:", filename);
       if (filename.endsWith(".onnx")) {
-        const onnxFile: JSZip.JSZipObject | null = data.file(filename)
+        const onnxFile: JSZip.JSZipObject | null = data.file(filename);
         if (onnxFile) {
           // console.log("[ONNX-web] making blob for ONNX file");
           onnxFileBlob = await onnxFile.async("blob");
@@ -68,7 +82,7 @@ export class OnnxRunnerWeb extends OnnxRunner {
         // console.log("[ONNX-web] ONNX file found:", filename);
       }
       if (filename.endsWith(".json")) {
-        const jsonFile: JSZip.JSZipObject | null = data.file(filename)
+        const jsonFile: JSZip.JSZipObject | null = data.file(filename);
         if (jsonFile) {
           // console.log("[ONNX-web] making blob for JSON file");
           jsonFileText = await jsonFile.async("text");
@@ -92,7 +106,7 @@ export class OnnxRunnerWeb extends OnnxRunner {
     console.log("[ONNX-web] Loading model...");
 
     this.session = await ort.InferenceSession.create(modelUrl, {
-      executionProviders: ['wasm'], // ✅ Ensure WebAssembly is used
+      executionProviders: ["wasm"], // ✅ Ensure WebAssembly is used
     });
     this.modelConfig = ModelConfigFromJson(JSON.parse(jsonFileText));
   }
@@ -103,7 +117,11 @@ export class OnnxRunnerWeb extends OnnxRunner {
       console.error("ONNX model is not loaded yet!");
       return -1;
     }
-    const tensor: ort.Tensor = to_tensor(input, config.memory_frame, config.active_gestures.getActiveFields());
+    const tensor: ort.Tensor = to_tensor(
+      input,
+      config.memory_frame,
+      config.active_gestures.getActiveFields()
+    );
     // console.log("Tensor shape:", tensor.dims, typeof tensor);
     const inputName = this.session.inputNames[0];
 
@@ -111,10 +129,11 @@ export class OnnxRunnerWeb extends OnnxRunner {
     const feeds = { [inputName]: tensor };
 
     // Run the model
-    const outputTensor: ort.InferenceSession.ReturnType = await this.session.run(feeds);
+    const outputTensor: ort.InferenceSession.ReturnType =
+      await this.session.run(feeds);
     // console.log("Output tensor:", outputTensor);
 
-    const outputName = this.session.outputNames[0];  // Get the output name dynamically
+    const outputName = this.session.outputNames[0]; // Get the output name dynamically
     const outputData = outputTensor[outputName].data;
     const numericData = outputData as Float32Array;
 
@@ -123,6 +142,6 @@ export class OnnxRunnerWeb extends OnnxRunner {
     // console.log(datasample.gestures[0], tensor)
     // console.log("Output tensor:", outputData, probabilities);
 
-    return probabilities.indexOf(Math.max(...probabilities));;
+    return probabilities.indexOf(Math.max(...probabilities));
   }
 }
