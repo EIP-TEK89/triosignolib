@@ -2,7 +2,7 @@ import { DataGestures } from "./sign_recognizer/gestures/data_gestures"
 
 export abstract class MediapipeRunner<T> {
     abstract loadHandTrackModel(): void;
-    abstract runHandTrackModel(video: T): Promise<DataGestures>;
+    abstract runHandTrackModel(video: T): DataGestures;
     abstract loadBodyTrackModel(): void;
     abstract runBodyTrackModel(video: T): Promise<DataGestures>;
     abstract loadFaceTrackModel(): void;
@@ -18,7 +18,7 @@ export class _MediapipeRunner extends MediapipeRunner<number> {
     async loadHandTrackModel() {
         throw new Error("Not implemented");
     }
-    async runHandTrackModel(video: number): Promise<DataGestures> {
+    runHandTrackModel(video: number): DataGestures {
         throw new Error("Not implemented");
     }
     async loadBodyTrackModel() {

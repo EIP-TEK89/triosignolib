@@ -1,5 +1,6 @@
 import * as ort from "onnxruntime-web";
-import { OnnxRunner, ModelConfig, DataSample, FIELDS, FIELD_DIMENSION } from "triosigno-lib";
+import { OnnxRunner, ModelConfig, DataSample, FIELDS, FIELD_DIMENSION, ModelConfigFromJson } from "triosigno-lib";
+import JSZip from "jszip";
 
 function softmax(arr: Float32Array): Float32Array {
   const max = Math.max(...arr);
@@ -50,11 +51,50 @@ export class OnnxRunnerWeb extends OnnxRunner {
     return this.session !== null && this.config() !== null;
   }
 
-  async init(modelUrl: string, modelConfig: ModelConfig): Promise<void> {
+  async init(data: JSZip): Promise<void> {
+    // console.log("[ONNX-web] Getting files...");
+    let onnxFileBlob: Blob | null = null;
+    let jsonFileText: string | null = null;
+
+    // Iterate over files in the ZIP
+    for (const filename of Object.keys(data.files)) {
+      // console.log("[ONNX-web] Found file:", filename);
+      if (filename.endsWith(".onnx")) {
+        const onnxFile: JSZip.JSZipObject | null = data.file(filename)
+        if (onnxFile) {
+          // console.log("[ONNX-web] making blob for ONNX file");
+          onnxFileBlob = await onnxFile.async("blob");
+        }
+        // console.log("[ONNX-web] ONNX file found:", filename);
+      }
+      if (filename.endsWith(".json")) {
+        const jsonFile: JSZip.JSZipObject | null = data.file(filename)
+        if (jsonFile) {
+          // console.log("[ONNX-web] making blob for JSON file");
+          jsonFileText = await jsonFile.async("text");
+        }
+        // console.log("[ONNX-web] ONNX file found:", filename);
+      }
+    }
+
+    // Handle missing files
+    if (!onnxFileBlob) throw new Error("No .onnx file found in ZIP.");
+    if (!jsonFileText) throw new Error("No .json file found in ZIP.");
+    console.log("[ONNX-web] Model unzipped...");
+
+    // Convert ONNX blob to URL for ONNX Runtime Web
+    const modelUrl = URL.createObjectURL(onnxFileBlob);
+
+    // console.log("ONNX Model URL:", modelUrl);
+    // console.log("JSON Config:", this.sign_recongnizer_config);
+    // console.log("Active Fields:", this.sign_recongnizer_config.active_gestures.getActiveFields());
+
+    console.log("[ONNX-web] Loading model...");
+
     this.session = await ort.InferenceSession.create(modelUrl, {
       executionProviders: ['wasm'], // ✅ Ensure WebAssembly is used
     });
-    this.modelConfig = modelConfig;
+    this.modelConfig = ModelConfigFromJson(JSON.parse(jsonFileText));
   }
 
   async run(input: DataSample): Promise<number> {
