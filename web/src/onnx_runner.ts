@@ -1,5 +1,5 @@
 import * as ort from "onnxruntime-web";
-import { OnnxRunner, ModelConfig, DataSample, FIELDS, FIELD_DIMENSION, ModelConfigFromJson } from "triosigno-lib";
+import { OnnxRunner, ModelConfig, DataSample, FIELDS, FIELD_DIMENSION, ModelConfigFromJson } from "triosigno-lib-core";
 import JSZip from "jszip";
 
 function softmax(arr: Float32Array): Float32Array {

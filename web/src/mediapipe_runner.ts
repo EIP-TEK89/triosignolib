@@ -1,6 +1,6 @@
 import { HandLandmarker, FilesetResolver, HandLandmarkerResult } from "@mediapipe/tasks-vision";
 
-import { MediapipeRunner, DataGestures } from "triosigno-lib";
+import { MediapipeRunner, DataGestures } from "triosigno-lib-core";
 
 const HANDLANDMARKER_MODEL_PATH: string = `https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task`
 

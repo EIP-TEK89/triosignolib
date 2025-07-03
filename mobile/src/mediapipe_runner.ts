@@ -1,7 +1,7 @@
 import {loadTensorflowModel, TensorflowModel, useTensorflowModel, TensorflowPlugin } from 'react-native-fast-tflite';
 import { useResizePlugin } from 'vision-camera-resize-plugin';
 import { Frame, useFrameProcessor } from "react-native-vision-camera"
-import { MediapipeRunner, DataGestures } from "triosigno-lib";
+import { MediapipeRunner, DataGestures } from "triosigno-lib-core";
 
 const { resize } = useResizePlugin()
 
