@@ -1,25 +1,32 @@
 {
-  "name": "triosigno-web",
-  "version": "0.1.0",
-  "description": "TypeScript library for TrioSigno",
+  "name": "triosigno-lib-web",
+  "version": "1.0.3",
+  "description": "Web implementation of TrioSigno sign language recognition library for React applications",
   "main": "./dist/index.js",
   "type": "module",
   "types": "dist/index.d.ts",
   "exports": {
-    ".": "./dist/index.js"
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
   },
+  "files": [
+    "dist"
+  ],
   "scripts": {
-    "build": "tsc -p tsconfig.json",
+    "build": "rimraf dist && tsc -p tsconfig.json",
     "test": "jest",
     "test:watch": "jest --watch",
     "lint": "eslint 'src/**/*.ts'",
     "lint:fix": "eslint 'src/**/*.ts' --fix",
     "format": "prettier --write 'src/**/*.ts'",
     "prepare": "npm run build",
-    "prepublishOnly": "npm test && npm run lint",
-    "preversion": "npm run lint",
-    "version": "npm run format && git add -A src",
-    "postversion": "git push && git push --tags"
+    "_prepublishOnly": "npm test && npm run lint",
+    "_preversion": "npm run lint",
+    "_version": "npm run format && git add -A src",
+    "_postversion": "git push && git push --tags",
+    "pub": "npm publish --access public"
   },
   "keywords": [],
   "author": "",
@@ -45,6 +52,10 @@
   },
   "dependencies": {
     "onnxruntime-web": "^1.21.1",
-    "triosigno-lib": "file:../core"
+    "triosigno-lib-core": "^1.0.3"
+  },
+  "peerDependencies": {
+    "react": "^16.8.0 || ^17.0.0 || ^18.0.0",
+    "react-dom": "^16.8.0 || ^17.0.0 || ^18.0.0"
   }
 }

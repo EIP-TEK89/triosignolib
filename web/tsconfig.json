@@ -7,9 +7,14 @@
     "declaration": true,
     "esModuleInterop": true,
     "strict": true,
-    "skipLibCheck": true
-  },
-  "paths": {
-      "triosigno-lib": ["../core/src"]
+    "skipLibCheck": true,
+    "baseUrl": ".",
+    "paths": {
+      "triosigno-lib-core": ["./node_modules/triosigno-lib-core"],
+      "onnxruntime-web": ["./node_modules/onnxruntime-web"],
+      "onnxruntime-common": ["./node_modules/onnxruntime-common"]
     }
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist"]
 }
