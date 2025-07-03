@@ -30,3 +30,9 @@ yarn-error.log*
 
 # OS
 .DS_Store
+
+# npm package tarballs
+*.tgz
+
+# Temporary directories
+temp-*/
