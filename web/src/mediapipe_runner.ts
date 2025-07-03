@@ -41,7 +41,14 @@ export class MediapipeRunnerWeb extends MediapipeRunner<HTMLVideoElement> {
 
         let startTimeMs = performance.now();
         const result: HandLandmarkerResult = this.handLandmarker.detectForVideo(video, startTimeMs);
-        return gesture.setHandsFromHandLandmarkerResult(result);
+        gesture.setHandsFromHandLandmarkerResult(result);
+
+        // let tmp = result.landmarks;
+        // result.landmarks = result.worldLandmarks;
+        result.worldLandmarks = result.landmarks;
+        gesture.other_hand_gesture = DataGestures.buildFromHandLandmarkerResult(result);
+
+        return gesture;
     }
     async loadBodyTrackModel() {
         throw new Error("Not implemented")
