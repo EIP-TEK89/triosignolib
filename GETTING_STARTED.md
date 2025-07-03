@@ -36,9 +36,10 @@ This guide will walk you through the complete process of setting up and using th
 1. Create or navigate to your React project:
 
 ```bash
-# Create a new React project if needed
-npx create-react-app my-sign-app
+# Create a new React project with Vite
+npm create vite@latest my-sign-app -- --template react-ts
 cd my-sign-app
+npm install
 ```
 
 2. Install the TrioSigno libraries:
@@ -53,14 +54,16 @@ npm install triosigno-lib-core triosigno-lib-web
 npm install onnxruntime-web @mediapipe/tasks-vision
 ```
 
-4. Configure your build tools (for Vite, Webpack, etc.):
-
-For Vite, add to `vite.config.ts`:
+4. Configure Vite for WASM and file system access by creating or modifying `vite.config.ts`:
 
 ```typescript
 import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
+import path from "path";
 
+// https://vitejs.dev/config/
 export default defineConfig({
+  plugins: [react()],
   optimizeDeps: {
     exclude: ["onnxruntime-web"], // Ensures proper handling of WASM
   },
@@ -70,6 +73,20 @@ export default defineConfig({
     },
   },
 });
+```
+
+5. Create public directory for models and ensure it's accessible:
+
+```bash
+mkdir -p public/models/alphabet
+# Copy your model files to public/models/alphabet/
+```
+
+6. Make sure to use relative paths to access the model in Vite's development server:
+
+```typescript
+// When loading models in development
+const modelPath = "/models/alphabet/model.onnx"; // Relative to public directory
 ```
 
 ### For Mobile (React Native)
@@ -131,7 +148,13 @@ function SignDetector() {
 
         // Initialize ONNX model for sign recognition
         const onnxRunner = new OnnxRunnerWeb('/models/alphabet/model.onnx');
-        await onnxRunner.init();
+
+        // Load the model and its configuration
+        await onnxRunner.load(); // This will load the model and parse the config
+
+        // Alternative: if you already have the configuration separately
+        // const modelConfig = {...your model config...};
+        // await onnxRunner.init('/models/alphabet/model.onnx', modelConfig);
 
         // Create the sign recognizer
         recognizerRef.current = new SignRecognizer(onnxRunner, mediapipeRunner);
@@ -182,7 +205,8 @@ function SignDetector() {
 
       processingFrame = true;
       try {
-        const predictions = await recognizerRef.current.predictFromVideo(videoRef.current);
+        // Use predict instead of predictAsync for non-blocking behavior
+        const predictions = recognizerRef.current.predict(videoRef.current);
         setRecognizedSign(predictions.signLabel);
       } catch (error) {
         console.error('Error predicting sign:', error);
@@ -271,7 +295,13 @@ function SignDetector() {
         }
 
         const onnxRunner = new OnnxRunnerMobile(modelPath);
-        await onnxRunner.init();
+
+        // Load the model and its configuration
+        await onnxRunner.load(); // This will load the model and parse the config
+
+        // Alternative: if you already have the configuration separately
+        // const modelConfig = {...your model config...};
+        // await onnxRunner.init(modelPath, modelConfig);
 
         // Create the sign recognizer
         recognizerRef.current = new SignRecognizer(onnxRunner, mediapipeRunner);
@@ -291,7 +321,8 @@ function SignDetector() {
       if (!recognizerRef.current || !isInitialized) return;
 
       try {
-        const predictions = await recognizerRef.current.predictFromVideo(frame);
+        // Use predict instead of predictAsync for non-blocking behavior
+        const predictions = recognizerRef.current.predict(frame);
         runOnJS(setRecognizedSign)(predictions.signLabel);
       } catch (error) {
         console.error('Error predicting sign:', error);
@@ -380,7 +411,12 @@ const onnxRunner = new OnnxRunnerMobile(
 The recognition results contain more than just the sign label:
 
 ```typescript
-const predictions = await signRecognizer.predictFromVideo(videoElement);
+// You can use either synchronous (non-blocking) or asynchronous (blocking) prediction
+// Synchronous (returns immediately with the latest prediction)
+const predictions = signRecognizer.predict(videoElement);
+
+// Asynchronous (waits for the prediction to complete)
+// const predictions = await signRecognizer.predictAsync(videoElement);
 
 // The recognized sign label (e.g., "A", "B", etc.)
 console.log("Sign:", predictions.signLabel);
@@ -395,7 +431,7 @@ console.log("Landmarks:", predictions.landmarks);
 You can use the landmarks to draw hand tracking visualization:
 
 ```typescript
-import { drawLandmarks } from "triosigno-lib-core";
+import { drawHandLandmarkerResult } from "triosigno-lib-core";
 
 // In your component:
 const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -405,7 +441,7 @@ if (canvasRef.current && predictions.landmarks) {
   const ctx = canvasRef.current.getContext("2d");
   if (ctx) {
     ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
-    drawLandmarks(ctx, predictions.landmarks);
+    drawHandLandmarkerResult(ctx, predictions.landmarks);
   }
 }
 ```
