@@ -157,3 +157,120 @@ export const getLandmarks = (
   return landmarks;
 
 }
+
+// const frameProcessor = useFrameProcessor(
+//   (frame) => {
+//     'worklet'
+//     if (model == null) return
+
+//     // 1. Resize 4k Frame to 192x192x3 using vision-camera-resize-plugin
+//     const resized = resize(frame, {
+//       scale: {
+//         width: 192,
+//         height: 192,
+//       },
+//       pixelFormat: 'rgb',
+//       dataType: 'float32',
+//     })
+
+//     // print(resized)
+//     // 2. Run model with given input buffer synchronously
+//     const THRESHOLD = 0.9;
+//     const [palmLocations, _palmScores] = model.runSync([resized])
+//     // let palmLocations: Float32Array = Float32Array.from(_palmLocations, sigmoid);
+//     const palmScores: Float32Array = Float32Array.from(_palmScores, sigmoid)
+
+//     let best_palms: { id: number, score: number | bigint }[] = [];
+//     let boxes: Box[] = [];
+//     let hand_detected = false;
+
+
+//     for (let i = 0; i < palmScores.length; i++) {
+//         if (palmScores[i] >= THRESHOLD) {
+//           best_palms.push({
+//             id: i,
+//             score: palmScores[i],
+//           });
+//         }
+//     }
+//     // print(`Found ${best_palms.length} palms with score above ${THRESHOLD}`);
+//     best_palms = best_palms
+//       .sort((a, b) => Number(b.score) - Number(a.score))
+//       .slice(0, 1)
+
+//     for (let i = 0; i < best_palms.length; i++) {
+//       const palmId = best_palms[i].id;
+//       const palmScore = best_palms[i].score;
+//       const palmLocation: DecodedPalm = getPalmDecoded(palmLocations, palmId, anchors);
+
+//       // print(palmLocations.length / palmScores.length)
+//       // print(`===== Palm ID: ${palmId} ${Math.floor(100 * palmLocation[0])} ${Math.floor(100 * palmLocation[1])} =====`)
+//       // for (let j = 0; j < 18; j++) {
+//       //   print(palmLocation[j])
+//       //   boxes.push({
+//       //     id: palmId + j,
+//       //     left: palmLocation[j] * frame.width * 0.5,
+//       //     top: j * 15,
+//       //     width: 10,
+//       //     height: 10,
+//       //   });
+//       // }
+
+
+
+//       // hand_detected = true;
+//       const palmX = palmLocation.centerX * frame.width;
+//       const palmY = palmLocation[6] * frame.height;
+//       const palmWidth = palmLocation[2] * frame.width;
+//       const palmHeight = palmLocation[3] * frame.height;
+
+//       boxes.push({
+//           id: palmId,
+//           left: palmX,
+//           top: 0,
+//           width: 10,
+//           height: 10,
+//         });
+
+//     }
+//     updateBox(boxes);
+
+//     // if (hand_detected && 0) {
+//     //   // print("oh")
+//     //   const resized = resize(frame, {
+//     //     scale: {
+//     //       width: 224,
+//     //       height: 224,
+//     //     },
+//     //     pixelFormat: 'rgb',
+//     //     dataType: 'float32',
+//     //   })
+
+//     //   const [norm_landmarks, handiness, hand_side, world_landmarks] = model2.runSync([resized]);
+//     //   // print(norm_landmarks);
+//     //   // print(handiness);
+//     //   print((hand_side[0] > 0.5) ? "Left Hand" : "Right Hand");
+//     //   // print((hand_side[0] < 0.5) ? "Left Hand" : "Right Hand");
+//     //   // print(world_landmarks);
+//     // }
+
+//     // updateBox(boxes);
+//     // print(`Detected ${best_palms.length} palms with score above ${THRESHOLD}`)
+//     // // print('Top 2 palms:', best_palms[0], best_palms[1]);
+//     // // print("Outputs:", outputs)
+//     // for (let i = 0; i < best_palms.length; i++) {
+//     //   const palmId = best_palms[i].id;
+//     //   const palmScore = best_palms[i].score;
+//     //   // const palmLocation = palmLocations[palmId];
+//     //   const step = palmLocations.length / palmScores.length;
+//     //   const start_index = palmId * step
+//     //   // print(palmLocations.length / palmScores.length)
+//     //   print(`===== Palm ID: ${palmId} =====`)
+//     //   for (let j = 0; j < step; j++) {
+//     //     print(palmLocations[palmId + j])
+//     //   }
+
+//     // }
+//   },
+//   [model]
+// )
