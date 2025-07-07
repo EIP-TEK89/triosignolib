@@ -118,6 +118,7 @@ export class OnnxRunnerWeb extends OnnxRunner {
       console.error("ONNX model is not loaded yet!");
       return -1;
     }
+
     const tensor: ort.Tensor = to_tensor(
       input,
       config.memory_frame,
@@ -125,6 +126,11 @@ export class OnnxRunnerWeb extends OnnxRunner {
     );
     // console.log("Tensor shape:", tensor.dims, typeof tensor);
     const inputName = this.session.inputNames[0];
+    // Check if the tensor is all zeros
+    if (tensor.data.every((v) => v === 0)) {
+      // console.warn("Input tensor is all zeros.");
+      return 0;
+    }
 
     // Create the correct 'feeds' object
     const feeds = { [inputName]: tensor };
