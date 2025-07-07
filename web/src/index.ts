@@ -10,3 +10,4 @@
 
 export * from "./onnx_runner";
 export * from "./mediapipe_runner";
+export * from "./canvas_drawer";

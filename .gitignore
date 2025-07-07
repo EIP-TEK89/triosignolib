@@ -36,3 +36,5 @@ yarn-error.log*
 
 # Temporary directories
 temp-*/
+package-lock.json
+.VSCodeCounter/

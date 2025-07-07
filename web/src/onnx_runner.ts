@@ -65,7 +65,7 @@ export class OnnxRunnerWeb extends OnnxRunner {
     return this.session !== null && this.config() !== null;
   }
 
-  async init(data: JSZip): Promise<void> {
+  async init(data: JSZip): Promise<ModelConfig> {
     // console.log("[ONNX-web] Getting files...");
     let onnxFileBlob: Blob | null = null;
     let jsonFileText: string | null = null;
@@ -109,6 +109,7 @@ export class OnnxRunnerWeb extends OnnxRunner {
       executionProviders: ["wasm"], // ✅ Ensure WebAssembly is used
     });
     this.modelConfig = ModelConfigFromJson(JSON.parse(jsonFileText));
+    return this.modelConfig;
   }
 
   async run(input: DataSample): Promise<number> {

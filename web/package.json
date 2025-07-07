@@ -54,7 +54,7 @@
     "@mediapipe/tasks-vision": "^0.10.10",
     "jszip": "^3.10.1",
     "onnxruntime-web": "^1.21.1",
-    "triosigno-lib-core": "^1.2.0"
+    "triosigno-lib-core": "1.2.0"
   },
   "peerDependencies": {
     "react": "^19.0.0 || ^18.0.0 || ^17.0.0 || ^16.8.0",

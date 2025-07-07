@@ -32,7 +32,7 @@ export class MediapipeRunnerMobile extends MediapipeRunner<Frame> {
     this.hand_landmarker_file = hand_landmarker_file;
   }
 
-  async loadHandTrackModel() {
+  async loadHandTrackModel(num_hand: number = 2) {
     console.log("Loading Hand Landmarker model...");
 
     try {
@@ -49,7 +49,7 @@ export class MediapipeRunnerMobile extends MediapipeRunner<Frame> {
     }
   }
 
-  runHandTrackModel(video: Frame): DataGestures {
+  async runHandTrackModel(video: Frame): Promise<DataGestures> {
     const gesture = new DataGestures();
 
     // if (!this.hand_detector || !this.hand_landmarker) {
@@ -87,13 +87,13 @@ export class MediapipeRunnerMobile extends MediapipeRunner<Frame> {
     return gesture;
   }
 
-  async loadBodyTrackModel() {
+  async loadBodyTrackModel(num_body: number = 1) {
     throw new Error("Not implemented");
   }
   async runBodyTrackModel(video: Frame): Promise<DataGestures> {
     throw new Error("Not implemented");
   }
-  async loadFaceTrackModel() {
+  async loadFaceTrackModel(num_face: number = 1) {
     throw new Error("Not implemented");
   }
   async runFaceTrackModel(video: Frame): Promise<DataGestures> {

@@ -158,4 +158,12 @@ export class DataSample {
     this.gestures.forEach(gesture => gesture.moveToOneSide(rightSide));
     return this;
   }
+
+  copy(): DataSample {
+    const copiedGestures = this.gestures.map(gesture => gesture.copy());
+    const copiedSample = new DataSample(this.label, copiedGestures, this.framerate, this.mirrorable);
+    copiedSample.invalid = this.invalid;
+    copiedSample.computeHandVelocity();
+    return copiedSample;
+  }
 }

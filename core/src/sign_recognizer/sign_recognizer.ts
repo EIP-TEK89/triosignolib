@@ -63,16 +63,21 @@ export class SignRecognizer<T> {
     this.session = onnxRunner;
     this.mediapipe_session = mediapipeRunner;
 
-    this.session.load()
-    this.mediapipe_session.loadHandTrackModel()
-    // this.mediapipe_session.loadBodyTrackModel()
-    // this.mediapipe_session.loadFaceTrackModel()
+    this.session.load().then((config: ModelConfig | null) => {
+      this.mediapipe_session.loadHandTrackModel(config ? config.tracking_model.hand : 2);
+      this.mediapipe_session.loadFaceTrackModel(config ? config.tracking_model.face : 1);
+      this.mediapipe_session.loadBodyTrackModel(config ? config.tracking_model.body : 1);
+    })
 
     this.lastPrediction = {
       signId: -1,
       signLabel: "Null",
       landmarks: null
     };
+  }
+
+  getMediapipeSession(): MediapipeRunner<T> {
+    return this.mediapipe_session;
   }
 
   /**
@@ -118,7 +123,7 @@ export class SignRecognizer<T> {
         this.datasample.gestures.unshift(gesture)
         const config: ModelConfig | null = this.session.config();
         if (config === null) {
-          console.error("Sign recognizer config is not loaded yet!");
+          console.warn("Sign recognizer config is not loaded yet!");
           this.isPredicting = false;
           return this.lastPrediction;
         }
@@ -164,10 +169,15 @@ export class SignRecognizer<T> {
       return -1;
     }
 
+    // Copy to avoid one side method to corrupt the original DataSample
+    const datasample_cpy: DataSample = datasample.copy();
+
+    // console.log("Recognizing sign with config:", config);
+    datasample_cpy.mirrorSample(true, false, true)
     if (config.one_side) {
-      datasample.moveToOneSide();
+      datasample_cpy.moveToOneSide();
     }
 
-    return this.session.run(datasample);
+    return this.session.run(datasample_cpy);
   }
 }

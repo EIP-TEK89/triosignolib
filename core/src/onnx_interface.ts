@@ -4,6 +4,12 @@ import { ActiveGestures } from "./sign_recognizer/gestures/active_gestures";
 import axios, { AxiosResponse } from "axios";
 import JSZip from "jszip";
 
+export interface TrackingModel {
+  hand: number;
+  body: number;
+  face: number;
+}
+
 export interface ModelConfig {
   labels: string[];
   label_explicit: string[];
@@ -16,6 +22,7 @@ export interface ModelConfig {
   num_heads: number;
   num_layers: number;
   ff_dim: number;
+  tracking_model: TrackingModel;
 }
 
 export function ModelConfigFromJson(json: any): ModelConfig {
@@ -31,6 +38,15 @@ export function ModelConfigFromJson(json: any): ModelConfig {
     num_heads: json.num_heads,
     num_layers: json.num_layers,
     ff_dim: json.ff_dim,
+    tracking_model: json.tracking_model ? {
+      hand: json.tracking_model.hand,
+      body: json.tracking_model.body,
+      face: json.tracking_model.face,
+    } : {
+      hand: 2,
+      body: 1,
+      face: 1, // Default values if not provided
+    },
   };
 }
 
@@ -48,7 +64,7 @@ export abstract class OnnxRunner {
    *
    * @argument path: The URL of the ONNX model to load.
    */
-  async load(path: string | null = null) {
+  async load(path: string | null = null): Promise<ModelConfig | null> {
     console.log("Loading ONNX model...", path, this.model_path);
 
     let _path: string = ""
@@ -74,10 +90,11 @@ export abstract class OnnxRunner {
     console.log("[ONNX] Unzipping...");
     await this.init(await JSZip.loadAsync(zipData));
     console.log("[ONNX] ONNX model loaded !");
+    return this.config();
   }
   abstract config(): ModelConfig | null;
   abstract isModelLoaded(): boolean;
-  abstract init(data: JSZip): Promise<void>;
+  abstract init(data: JSZip): Promise<ModelConfig>;
   abstract run(input: DataSample): Promise<number>;
 }
 
@@ -88,7 +105,7 @@ export class _OnnxRunner extends OnnxRunner {
   isModelLoaded(): boolean {
     throw new Error("Not implemented");
   }
-  async init(data: JSZip): Promise<void> {
+  async init(data: JSZip): Promise<ModelConfig> {
     throw new Error("Not implemented");
   }
   async run(input: DataSample): Promise<number> {

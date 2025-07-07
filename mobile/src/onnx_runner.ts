@@ -56,7 +56,7 @@ export class OnnxRunnerMobile extends OnnxRunner {
     return this.session !== null && this.config() !== null;
   }
 
-  async init(data: JSZip): Promise<void> {
+  async init(data: JSZip): Promise<ModelConfig> {
     let onnxFilePath: string | null = null;
     let jsonFileText: string | null = null;
 
@@ -92,6 +92,7 @@ export class OnnxRunnerMobile extends OnnxRunner {
     const uint8Model = Uint8Array.from(atob(buffer), c => c.charCodeAt(0));
     this.session = await ort.InferenceSession.create(uint8Model);
     this.modelConfig = ModelConfigFromJson(JSON.parse(jsonFileText));
+    return this.modelConfig;
   }
 
   async run(input: DataSample): Promise<number> {
